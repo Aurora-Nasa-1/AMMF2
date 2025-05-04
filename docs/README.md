@@ -12,7 +12,7 @@
 
 AMMF2 (Aurora Modular Magisk Framework 2) 是一个功能强大的 Magisk 模块开发框架，旨在简化模块开发流程，提供标准化的结构和丰富的功能组件。该框架支持多语言、WebUI 配置界面、自定义脚本等特性，适用于各种类型的 Magisk 模块开发。
 
-[Telegram群组](https://t.me/AMMFDeveloper)
+[Telegram群组](https://t.me/AuroraNasaModule)
 ## ✨ 主要特性
 
 - **多语言支持**：内置中文、英文、日语、俄语等多种语言支持

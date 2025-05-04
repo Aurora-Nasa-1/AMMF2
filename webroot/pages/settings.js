@@ -438,7 +438,7 @@ const SettingsPage = {
             const updatedSettings = {};
             for (const key in this.settings) {
                 // 跳过内部属性和排除项
-                if (key.startsWith('_') || this.isExcluded(key)) continue;
+                if (key.startsWith('_') || this.excludedSettings.includes(key)) continue;
 
                 const element = document.getElementById(`setting-${key}`);
                 if (!element) continue;
