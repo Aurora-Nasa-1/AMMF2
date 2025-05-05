@@ -91,6 +91,8 @@
     gap: 0.75rem;
     width: 100%;
     font: var(--body-m);
+    overflow-x: auto;
+    padding-bottom: 0.25rem; /* 为滚动条预留空间 */
 }
 
 /* 日志级别图标 */
@@ -128,9 +130,27 @@
 /* 日志消息样式 */
 .log-message {
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
+    min-width: 0; /* 确保flex布局正常工作 */
+}
+
+/* 自定义滚动条样式 */
+.log-line-content::-webkit-scrollbar {
+    height: 4px;
+}
+
+.log-line-content::-webkit-scrollbar-track {
+    background: var(--surface-container-high);
+    border-radius: 2px;
+}
+
+.log-line-content::-webkit-scrollbar-thumb {
+    background: var(--surface-variant);
+    border-radius: 2px;
+}
+
+.log-line-content::-webkit-scrollbar-thumb:hover {
+    background: var(--on-surface-variant);
 }
 
 /* 空状态样式 */
