@@ -1,249 +1,156 @@
-/**
- * AMMF WebUI 日志页面样式
- * 基于 Material Design 3 设计系统
- */
-
-/* 日志页面容器 */
 .logs-container {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 4rem);
-    gap: 1rem;
-    padding: 1rem;
+    padding: 16px;
 }
 
-/* 日志头部区域 */
-.logs-header {
-    padding: 1rem;
-    border-radius: 1rem;
-    background-color: var(--surface-container);
-    overflow: visible;
-}
-
-/* 搜索框容器 */
-.search-box {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.1rem;
-    border-radius: 0.75rem;
-    flex: 2;
-    min-width: 250px;
-    background-color: var(--surface-variant);
-    margin: 0;
-}
-
-.search-box .material-symbols-rounded {
-    color: var(--on-surface-variant);
-    font-size: 1.25rem;
-}
-
-.search-box input {
-    border: none;
-    background: none;
-    width: 100%;
-    color: var(--on-surface-variant);
-    font: var(--body-l);
-    padding: 0;
-}
-
-.search-box input:focus {
-    outline: none;
-}
-
-/* 日志显示区域 */
-.logs-display {
-    flex: 1;
-    border-radius: 1rem;
-    background-color: var(--surface-container);
-    overflow: hidden;
+.logs-scroll-container {
     position: relative;
+    overflow-y: auto;
+    width: 100%;
 }
 
-/* 虚拟滚动容器 */
+.logs-content {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    margin: 0;
+    padding: 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.log-line {
+    display: flex;
+    align-items: flex-start;
+    padding: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.log-line:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.log-level {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    min-width: 80px;
+}
+
+.log-level .material-symbols-rounded {
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+.log-level.error {
+    color: #B3261E;
+    background-color: #F9DEDC;
+}
+
+.log-level.warn {
+    color: #7D5700;
+    background-color: #FEF0C7;
+}
+
+.log-level.info {
+    color: #1B72E8;
+    background-color: #E8F0FE;
+}
+
+.log-level.debug {
+    color: #1B1B1F;
+    background-color: #E3E2E6;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 32px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
 .virtual-scroll-container {
     position: relative;
     width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
 }
 
 .virtual-scroll-content {
     position: absolute;
     width: 100%;
-    left: 0;
 }
 
-/* 日志行样式 */
-.log-line {
-    padding: 0.75rem 1rem 0.75rem 80px; /* 增加左padding留出标签空间 */
-    position: relative;
-    border-bottom: 1px solid var(--surface-variant);
-    transition: background-color var(--tra);
-    min-height: 56px; /* 增加行高 */
-    line-height: 1.8; /* 设置行间距 */
-}
-
-.log-line:hover {
-    background-color: var(--surface-container-high);
-}
-
-.log-line-content {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    width: 100%;
-    font: var(--body-m);
-}
-
-/* 日志级别图标 */
-.log-level-icon {
-    font-size: 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    min-width: 24px;
-    margin-top: 0; /* 修复图标与文本的对齐问题 */
-}
-
-/* 日志级别颜色 */
-.log-line.error .log-level-icon {
-    color: var(--error);
-}
-
-.log-line.warn .log-level-icon {
-    color: var(--secondary);
-}
-
-.log-line.info .log-level-icon {
-    color: var(--primary);
-}
-
-.log-line.debug .log-level-icon {
-    color: var(--tertiary);
-}
-
-/* 时间戳样式 */
-.log-timestamp {
-    color: var(--on-surface-variant);
-    font: var(--label-m);
-    white-space: nowrap;
-    flex-shrink: 0;
-    margin-top: 0; /* 修复时间戳与文本的对齐问题 */
-    margin-right: 0.5rem; /* 增加右侧间距 */
-}
-
-/* 日志消息样式 */
-.log-message {
-    flex: 1;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    min-width: 0;
-    line-height: 1.5;
-    display: flex;
-    align-items: center; /* 确保内容垂直居中 */
-}
-
-/* 长文本日志行 */
-.log-line.expandable .log-message {
-    position: relative;
-    cursor: pointer;
-}
-
-.log-line.expanded .log-message {
-    white-space: normal;
-}
-
-.log-line.collapsed .log-message {
-    max-height: 3rem;
-    overflow: hidden;
-}
-
-.log-line.collapsed .log-message::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 1.5rem;
-    background: linear-gradient(to right, transparent, var(--surface-container) 70%);
-}
-
-.log-expand-button {
-    position: absolute;
-    right: 0.5rem;
-    bottom: 0;
-    background-color: var(--surface-container-high);
-    color: var(--on-surface);
-    border: none;
-    border-radius: 1rem;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-    cursor: pointer;
-    z-index: 1;
-    opacity: 0;
-    transition: opacity var(--tra);
-}
-
-.log-line:hover .log-expand-button {
-    opacity: 1;
-}
-
-/* 搜索高亮 */
-mark {
-    background-color: var(--secondary-container);
-    color: var(--on-secondary-container);
-    border-radius: 2px;
-    padding: 0 2px;
-}
-
-/* 空状态样式 */
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    gap: 1rem;
-    color: var(--on-surface-variant);
-}
-
-.empty-state .material-symbols-rounded {
-    font-size: 3rem;
-}
-
-/* 加载状态 */
-.logs-display.loading {
-    opacity: 0.7;
+/* 加载状态样式 */
+.logs-content.loading {
+    opacity: 0.6;
     pointer-events: none;
 }
 
-/* 响应式布局 */
-@media (max-width: 600px) {
-    .logs-container {
-        padding: 0.5rem;
-        gap: 0.5rem;
-        height: calc(100vh - 3.5rem);
-    }
+/* 日志删除对话框样式 */
+.log-delete-dialog {
+    padding: 24px;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 90%;
+}
 
-    .logs-header {
-        padding: 0.75rem;
-        margin: 0;
-    }
+.log-delete-dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.3);
+}
 
-    .logs-filters {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 0.25rem;
-        margin: -0.25rem;
-        gap: 0.5rem;
-    }
+.log-delete-dialog h2 {
+    margin: 0 0 16px 0;
+    font-size: 20px;
+    font-weight: 500;
+}
 
-    .file-selector,
-    .search-box {
-        min-width: 0;
-        width: 100%;
-    }
+.log-delete-dialog p {
+    margin: 0 0 24px 0;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.dialog-button {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dialog-button:not(.filled) {
+    background-color: transparent;
+    color: #1B72E8;
+}
+
+.dialog-button.filled {
+    background-color: #1B72E8;
+    color: white;
+}
+
+.dialog-button:hover {
+    background-color: rgba(27, 114, 232, 0.08);
+}
+
+.dialog-button.filled:hover {
+    background-color: #1557B0;
+}
+
+/* 关闭动画 */
+.log-delete-dialog.closing {
+    animation: fadeOut 0.12s ease-out;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.95); }
 }

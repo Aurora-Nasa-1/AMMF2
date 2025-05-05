@@ -320,25 +320,12 @@ const LogsPage = {
         if (!line.trim()) return '';
         
         let formatted = this.escapeHtml(line);
+        let levelTag = '';
         
-        // 解析时间戳（假设日志格式包含ISO时间戳）
-        // 提取日志级别并移到行首
+        // 解析日志级别
         const levelMatch = formatted.match(/\[(ERROR|WARN|INFO|DEBUG)\]/);
-        const level = levelMatch ? levelMatch[1] : 'UNKNOWN';
-        
-        // 移除原始日志中的级别标识
-        formatted = formatted.replace(/\[(ERROR|WARN|INFO|DEBUG)\]/g, '');
-        
-        // 解析时间戳
-        const timeMatch = formatted.match(/\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}/);
-        if (timeMatch) {
-            const timestamp = new Date(timeMatch[0]);
-            const relativeTime = this.getRelativeTimeString(timestamp);
-            formatted = formatted.replace(timeMatch[0], relativeTime);
-        }
-        
-        // 为不同级别的日志添加颜色标识
-        formatted = formatted.replace(/\[(ERROR|WARN|INFO|DEBUG)\]/g, (match, level) => {
+        if (levelMatch) {
+            const level = levelMatch[1];
             const levelClass = level.toLowerCase();
             let icon = '';
             
@@ -357,13 +344,22 @@ const LogsPage = {
                     break;
             }
             
-            return `<div class="log-line ${levelClass}">
-            <div class="log-level-tag">${level}</div>
-            <div class="log-content-wrapper">
-                <span class="log-level">${icon}${level}</span>`;
-        });
+            levelTag = `<span class="log-level ${levelClass}">${icon}${level}</span>`;
+            formatted = formatted.replace(levelMatch[0], '');
+        }
+        
+        // 解析时间戳（假设日志格式包含ISO时间戳）
+        const timeMatch = formatted.match(/\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}/);
+        if (timeMatch) {
+            const timestamp = new Date(timeMatch[0]);
+            const relativeTime = this.getRelativeTimeString(timestamp);
+            formatted = formatted.replace(timeMatch[0], relativeTime);
+        }
+        
+        // 将日志级别标签放在最前面
+        return levelTag + formatted;
             
-        return `</div></div>${formatted}`;
+        return formatted;
     },
     
     // 获取相对时间字符串
