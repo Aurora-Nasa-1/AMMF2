@@ -64,6 +64,9 @@
 .virtual-scroll-container {
     position: relative;
     width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .virtual-scroll-content {
@@ -74,9 +77,8 @@
 
 /* 日志行样式 */
 .log-line {
-    padding: 0.25rem 1rem;
+    padding: 0.5rem 1rem;
     display: flex;
-    align-items: center;
     border-bottom: 1px solid var(--surface-variant);
     transition: background-color var(--tra);
 }
@@ -87,12 +89,10 @@
 
 .log-line-content {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
     width: 100%;
     font: var(--body-m);
-    overflow-x: auto;
-    padding-bottom: 0.25rem; /* 为滚动条预留空间 */
 }
 
 /* 日志级别图标 */
@@ -101,6 +101,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+    min-width: 24px;
+    margin-top: 2px;
 }
 
 /* 日志级别颜色 */
@@ -125,32 +128,70 @@
     color: var(--on-surface-variant);
     font: var(--label-m);
     white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
 }
 
 /* 日志消息样式 */
 .log-message {
     flex: 1;
-    white-space: nowrap;
-    min-width: 0; /* 确保flex布局正常工作 */
+    word-break: break-word;
+    overflow-wrap: break-word;
+    min-width: 0;
+    line-height: 1.5;
 }
 
-/* 自定义滚动条样式 */
-.log-line-content::-webkit-scrollbar {
-    height: 4px;
+/* 长文本日志行 */
+.log-line.expandable .log-message {
+    position: relative;
+    cursor: pointer;
 }
 
-.log-line-content::-webkit-scrollbar-track {
-    background: var(--surface-container-high);
+.log-line.expanded .log-message {
+    white-space: normal;
+}
+
+.log-line.collapsed .log-message {
+    max-height: 3rem;
+    overflow: hidden;
+}
+
+.log-line.collapsed .log-message::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 1.5rem;
+    background: linear-gradient(to right, transparent, var(--surface-container) 70%);
+}
+
+.log-expand-button {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0;
+    background-color: var(--surface-container-high);
+    color: var(--on-surface);
+    border: none;
+    border-radius: 1rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity var(--tra);
+}
+
+.log-line:hover .log-expand-button {
+    opacity: 1;
+}
+
+/* 搜索高亮 */
+mark {
+    background-color: var(--secondary-container);
+    color: var(--on-secondary-container);
     border-radius: 2px;
-}
-
-.log-line-content::-webkit-scrollbar-thumb {
-    background: var(--surface-variant);
-    border-radius: 2px;
-}
-
-.log-line-content::-webkit-scrollbar-thumb:hover {
-    background: var(--on-surface-variant);
+    padding: 0 2px;
 }
 
 /* 空状态样式 */
