@@ -105,6 +105,10 @@
 }
 
 #cancel-language {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
     font: var(--label-l);
     padding: 10px 24px;
     border-radius: var(--border-radius-m);
