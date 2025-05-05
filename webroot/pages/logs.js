@@ -302,15 +302,19 @@ const LogsPage = {
         // Core.showToast(I18n.translate('LOGS_SCROLLED', '日志已滚动')); // Removed excessive toast
     },
 
-    handleFileChange(event) {
+    async handleFileChange(event) {
         this.state.currentFile = event.target.value;
-        this.loadLogContent();
+        await this.loadLogContent(true);
+        this.updateContainerSize();
         Core.showToast(I18n.translate('LOGS_FILE_CHANGED', '已切换日志文件'));
     },
 
-    handleLevelChange(event) {
+    async handleLevelChange(event) {
         this.state.filter.level = event.target.value;
-        this.processLogContent();
+        await this.processLogContent();
+        this.updateContainerSize();
+        this.virtualScroll.scrollTop = 0;
+        this.renderVirtualScroll();
         Core.showToast(I18n.translate('LOGS_LEVEL_CHANGED', '已更改日志级别筛选'));
     },
 
