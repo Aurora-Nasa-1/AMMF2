@@ -82,6 +82,25 @@ const LogsPage = {
         if (this.state.content) {
             this.processLogContent();
         }
+
+        // 绑定操作按钮事件
+        const refreshBtn = document.getElementById('refresh-logs');
+        if (refreshBtn && !refreshBtn.dataset.bound) {
+            refreshBtn.addEventListener('click', () => this.loadLogContent());
+            refreshBtn.dataset.bound = 'true';
+        }
+
+        const exportBtn = document.getElementById('export-logs');
+        if (exportBtn && !exportBtn.dataset.bound) {
+            exportBtn.addEventListener('click', () => this.exportLog());
+            exportBtn.dataset.bound = 'true';
+        }
+
+        const clearBtn = document.getElementById('clear-logs');
+        if (clearBtn && !clearBtn.dataset.bound) {
+            clearBtn.addEventListener('click', () => this.clearLog());
+            clearBtn.dataset.bound = 'true';
+        }
     },
 
     // 扫描日志文件
@@ -364,9 +383,13 @@ const LogsPage = {
         if (result) {
             try {
                 const logPath = this.state.logFiles[this.state.currentFile];
-                await Core.execCommand(`cat /dev/null > "${logPath}" && chmod 666 "${logPath}"`);
-                await this.loadLogContent();
-                Core.showToast(I18n.translate('LOG_CLEARED', '日志已清除'));
+                const clearResult = await Core.execCommand(`cat /dev/null > "${logPath}" && chmod 666 "${logPath}"`);
+                if (clearResult !== undefined) {
+                    await this.loadLogContent();
+                    Core.showToast(I18n.translate('LOG_CLEARED', '日志已清除'));
+                } else {
+                    throw new Error('命令执行失败');
+                }
             } catch (error) {
                 console.error('清除日志失败:', error);
                 Core.showToast(I18n.translate('LOG_CLEAR_ERROR', '清除日志失败'), 'error');
