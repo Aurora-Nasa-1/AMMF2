@@ -318,7 +318,6 @@ const LogsPage = {
     handleScroll(event) {
         this.virtualScroll.scrollTop = event.target.scrollTop;
         requestAnimationFrame(() => this.renderVirtualScroll());
-        // Core.showToast(I18n.translate('LOGS_SCROLLED', '日志已滚动')); // Removed excessive toast
     },
 
     async handleFileChange(event) {
