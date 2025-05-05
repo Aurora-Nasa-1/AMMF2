@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # 设置为 0 以获取所有标签历史
+          fetch-depth: 0
 
       - name: Install 7z
         uses: edgarrc/action-7z@v1.0.5
@@ -40,12 +40,26 @@ jobs:
           echo "versionCode=${CURRENT_TIME}" >> module.prop
           echo "author=${action_author}" >> module.prop
           echo "description=${action_description}" >> module.prop
+          echo "updateJson=${updateJson}" >> module.prop
+          # 创建update.json
+          cat > update.json << EOF
+          {
+            "version": "${LATEST_TAG}",
+            "versionCode": "${CURRENT_TIME}",
+            "zipUrl": "https://github.com/${Github_update_repo}/releases/download/${LATEST_TAG}/${action_name}_${LATEST_TAG}.zip",
+            "changelog": "https://github.com/${Github_update_repo}/releases/tag/${LATEST_TAG}"
+          }
+          EOF
+          
           mkdir bin
 
       - name: Replace module ID in files
         run: |
+          LATEST_TAG=$(cat latest_tag.txt)
           . ./module_settings/config.sh
           # 替换文件中的模块ID
+          find webroot -name "*.js" -exec sed -i "s/v114514/${LATEST_TAG}/g" {} \;
+          find webroot -name "status.js" -exec sed -i "s/Aurora-Nasa-1\/AMMF/${Github_update_repo}/g" {} \;
           find files -name "*.sh" -exec sed -i "s/AMMF/${action_id}/g" {} \;
           find webroot -name "*.js" -exec sed -i "s/AMMF/${action_id}/g" {} \;
           find src -name "*.cpp" -exec sed -i "s/AMMF2/${action_id}/g" {} \;
@@ -107,3 +121,11 @@ jobs:
         with:
           files: |
             *.zip
+
+      - name: Update repository update.json
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add update.json
+          git commit -m "chore: update update.json for ${LATEST_TAG}" || echo "No changes to commit"
+          git push

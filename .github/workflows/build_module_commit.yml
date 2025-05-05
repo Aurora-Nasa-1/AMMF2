@@ -36,15 +36,17 @@ jobs:
           echo "versionCode=${CURRENT_TIME}" >> module.prop
           echo "author=${action_author}" >> module.prop
           echo "description=${action_description}" >> module.prop
+          echo "updateJson=${updateJson}" >> module.prop
           cat module.prop
-          rm latest_tag.txt
-          rm current_time.txt
           mkdir bin
 
       - name: Replace module ID in files
         run: |
+          LATEST_TAG=$(cat latest_tag.txt)
           . ./module_settings/config.sh
           # 替换文件中的模块ID
+                    find webroot -name "*.js" -exec sed -i "s/v114514/${LATEST_TAG}/g" {} \;
+          find webroot -name "status.js" -exec sed -i "s/Aurora-Nasa-1\/AMMF/${Github_update_repo}/g" {} \;
           find files -name "*.sh" -exec sed -i "s/AMMF/${action_id}/g" {} \;
           find webroot -name "*.js" -exec sed -i "s/AMMF/${action_id}/g" {} \;
           find src -name "*.cpp" -exec sed -i "s/AMMF2/${action_id}/g" {} \;
@@ -92,6 +94,8 @@ jobs:
         run: |
           rm -rf src
           rm build.sh
+          rm latest_tag.txt
+          rm current_time.txt
           
       - name: Create META-INF directory structure
         run: |

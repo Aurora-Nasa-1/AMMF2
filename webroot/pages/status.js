@@ -12,6 +12,233 @@ const StatusPage = {
 
     // 设备信息
     deviceInfo: {},
+
+    // 版本信息
+    currentVersion: 'v114514',
+    GitHubRepo: 'Aurora-Nasa-1/AMMF',
+    latestVersion: null,
+    updateAvailable: false,
+    updateChecking: false,
+    
+    // 测试模式配置
+    testMode: {
+        enabled: false,
+        mockVersion: null
+    },
+    
+    async checkUpdate() {
+        if (this.updateChecking) return; // 避免重复检查
+        this.updateChecking = true;
+        
+        try {
+            if (this.testMode.enabled) {
+                this.latestVersion = this.testMode.mockVersion;
+            } else {
+                this.latestVersion = await this.getLatestVersion();
+            }
+            
+            if (this.latestVersion) {
+                const currentVersionParsed = this.parseVersion(this.currentVersion);
+                if (!currentVersionParsed) {
+                    throw new Error(`当前版本号格式无效: ${this.currentVersion}`);
+                }
+                this.updateAvailable = this.compareVersions(this.latestVersion, this.currentVersion) > 0;
+                this.updateError = null; // 清除之前的错误
+            } else {
+                this.updateAvailable = false;
+                this.updateError = null; // 不显示错误，因为可能是没有发布版本
+            }
+        } catch (error) {
+            console.warn('检查更新失败:', error);
+            this.updateAvailable = false;
+            this.updateError = error.message;
+        } finally {
+            this.updateChecking = false;
+            // 使用正确的方式更新UI
+            const container = document.querySelector('.status-page');
+            if (container) {
+                container.innerHTML = this.render();
+                this.afterRender();
+            }
+        }
+    },
+    
+    renderUpdateBanner() {
+        if (this.updateChecking) {
+            return `
+                <div class="update-banner checking">
+                    <div class="update-info">
+                        <div class="update-icon">
+                            <span class="material-symbols-rounded">sync</span>
+                        </div>
+                        <div class="update-text">
+                            <span>${I18n.translate('CHECKING_UPDATE', '正在检查更新...')}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (this.updateError) {
+            return `
+                <div class="update-banner error">
+                    <div class="update-info">
+                        <div class="update-icon">
+                            <span class="material-symbols-rounded">error</span>
+                        </div>
+                        <div class="update-text">
+                            <span>${this.updateError}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (this.updateAvailable) {
+            return `
+                <div class="update-banner">
+                    <div class="update-info">
+                        <div class="update-icon">
+                            <span class="material-symbols-rounded">system_update</span>
+                        </div>
+                        <div class="update-text">
+                            <span>${I18n.translate('UPDATE_AVAILABLE', '有新版本可用')}: ${this.latestVersion}</span>
+                        </div>
+                    </div>
+                    <button class="update-button md3-button" onclick="window.open('https://github.com/${this.GitHubRepo}/releases/latest', '_blank')">
+                        <span class="material-symbols-rounded">open_in_new</span>
+                        <span>${I18n.translate('VIEW_UPDATE', '查看更新')}</span>
+                    </button>
+                </div>
+            `;
+        }
+        
+        return '';
+    },
+    
+    // 版本检查相关方法
+    parseVersion(versionStr) {
+        // 支持四段式版本号和带有后缀的版本号，包括下划线和连字符分隔
+        const cleanVersion = versionStr.replace(/^v/, '').replace(/[_-]/g, '-');
+        const match = cleanVersion.match(/^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?(?:[-.]?([A-Za-z]+\d*)?)?$/);
+        if (!match) return null;
+        
+        return {
+            major: parseInt(match[1] || '0'),
+            minor: parseInt(match[2] || '0'),
+            patch: parseInt(match[3] || '0'),
+            build: parseInt(match[4] || '0'),
+            suffix: match[5] || null  // 版本后缀（如FIX）
+        };
+    },
+    
+    compareVersions(v1, v2) {
+        const v1Parts = this.parseVersion(v1);
+        const v2Parts = this.parseVersion(v2);
+        
+        if (!v1Parts || !v2Parts) return 0;
+        
+        // 比较主版本号
+        if (v1Parts.major !== v2Parts.major) {
+            return v1Parts.major - v2Parts.major;
+        }
+        
+        // 比较次版本号
+        if (v1Parts.minor !== v2Parts.minor) {
+            return v1Parts.minor - v2Parts.minor;
+        }
+        
+        // 比较修订号
+        if (v1Parts.patch !== v2Parts.patch) {
+            return v1Parts.patch - v2Parts.patch;
+        }
+        
+        // 比较构建号（第四段版本号）
+        if (v1Parts.build !== v2Parts.build) {
+            return v1Parts.build - v2Parts.build;
+        }
+        
+        // 处理版本后缀
+        if (!v1Parts.suffix && !v2Parts.suffix) return 0;
+        if (!v1Parts.suffix) return 1;
+        if (!v2Parts.suffix) return -1;
+        
+        // 对特殊后缀进行优先级排序
+        const suffixPriority = {
+            'RELEASE': 3,
+            'FIX': 2,
+            'BETA': 1,
+            'ALPHA': 0
+        };
+        
+        const v1Priority = suffixPriority[v1Parts.suffix.toUpperCase()] ?? -1;
+        const v2Priority = suffixPriority[v2Parts.suffix.toUpperCase()] ?? -1;
+        
+        if (v1Priority !== v2Priority) {
+            return v1Priority - v2Priority;
+        }
+        
+        // 如果优先级相同，按字母顺序比较
+        return v1Parts.suffix.localeCompare(v2Parts.suffix);
+    },
+    
+    async getLatestVersion() {
+        const maxRetries = 3;
+        let retryCount = 0;
+        
+        while (retryCount < maxRetries) {
+            try {
+                // 使用GitHub API获取最新发布版本
+                const response = await fetch(`https://api.github.com/repos/${this.GitHubRepo}/releases/latest`);
+                
+                if (!response.ok) {
+                    throw new Error(`GitHub API请求失败: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                // 从tag_name中提取版本号（移除'v'前缀如果存在）
+                const version = data.tag_name.replace(/^v/, '');
+                
+                if (!this.parseVersion(version)) {
+                    throw new Error(`无效的版本号格式: ${version}`);
+                }
+                
+                return version;
+            } catch (error) {
+                console.error(`获取最新版本失败 (尝试 ${retryCount + 1}/${maxRetries}):`, error);
+                retryCount++;
+                
+                if (retryCount === maxRetries) {
+                    console.error('达到最大重试次数，版本检查失败');
+                    return null;
+                }
+                
+                // 等待一段时间后重试（使用指数退避）
+                await new Promise(resolve => setTimeout(resolve, Math.min(1000 * Math.pow(2, retryCount), 5000)));
+            }
+        }
+        
+        return null;
+    },
+    
+    renderUpdateBanner() {
+        return `
+            <div class="update-banner">
+                <div class="update-info">
+                    <div class="update-icon">
+                        <span class="material-symbols-rounded">system_update</span>
+                    </div>
+                    <div class="update-text">
+                        <span>${I18n.translate('UPDATE_AVAILABLE', '有新版本可用')}: ${this.latestVersion}</span>
+                    </div>
+                </div>
+                <button class="update-button md3-button" onclick="window.open('https://github.com/${this.GitHubRepo}/releases/latest', '_blank')">
+                    <span class="material-symbols-rounded">open_in_new</span>
+                    <span>${I18n.translate('VIEW_UPDATE', '查看更新')}</span>
+                </button>
+            </div>
+        `;
+    },
     
     // 初始化
     async init() {
@@ -21,6 +248,10 @@ const StatusPage = {
             await this.loadDeviceInfo();
             // 启动自动刷新
             this.startAutoRefresh();
+            
+            // 异步检查更新，不阻塞页面加载
+            this.checkUpdate();
+            // 移除这个 catch 处理，因为 checkUpdate 方法内部已经处理了错误
             
             return true;
         } catch (error) {
@@ -67,6 +298,7 @@ const StatusPage = {
         
         return `
             <div class="status-page">
+                ${this.updateAvailable ? this.renderUpdateBanner() : ''}
                 <!-- 合并的状态卡片 -->
                 <div class="card status-card">
                     <div class="status-card-header">
@@ -518,7 +750,6 @@ const StatusPage = {
             default: return I18n.translate('UNKNOWN', '未知');
         }
     },
-    
     // 页面激活时的回调
     onActivate() {
         console.log('状态页面已激活');

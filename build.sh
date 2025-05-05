@@ -14,7 +14,7 @@ fi
 get_current_user() {
     if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
         # Get username on Windows
-        echo "$USERNAME"  # Windows环境变量
+        echo "$USERNAME" # Windows环境变量
     else
         # Get username on Linux/Mac
         echo "$USER"
@@ -361,13 +361,13 @@ install_ndk() {
 package_module() {
     local version=$1
     local output_file="${action_name}_${version}.zip"
-    
+
     # 添加创建META-INF目录的逻辑
     log_info "Creating META-INF directory structure..."
     mkdir -p META-INF/com/google/android
 
     # 创建updater-script文件
-    echo '#MAGISK' > META-INF/com/google/android/updater-script
+    echo '#MAGISK' >META-INF/com/google/android/updater-script
     log_info "Packaging module..."
     if [ $IS_WINDOWS -eq 1 ]; then
         # 使用 PowerShell 的改进版本
@@ -460,6 +460,7 @@ main() {
     fi
     . ./module_settings/config.sh
     log_info "Building module: ${action_name} settings from module_settings/config.sh"
+    # 在 package_module 函数中，修改 module.prop 生成部分
     {
         echo "id=${action_id}"
         echo "name=${action_name}"
@@ -467,12 +468,16 @@ main() {
         echo "versionCode=$(date +'%Y%m%d')"
         echo "author=${action_author}"
         echo "description=${action_description}"
+        echo "updateJson=${updateJson}"
     } >module.prop
 
     # 替换标识符
+    find webroot -name "*.js" -exec sed -i "s/v114514/${version}/g" {} \;
+    find webroot -name "status.js" -exec sed -i "s/Aurora-Nasa-1\/AMMF/${Github_update_repo}/g" {} \;
     find files webroot -type f -name "*.sh" -o -name "*.js" -exec sed -i "s/AMMF/${action_id}/g" {} +
     find src -name "*.cpp" -exec sed -i "s/AMMF2/${action_id}/g" {} +
     sed -i "s/AMMF/${action_id}/g" webroot/index.html
+    # 在 main 函数中，替换标识符部分添加
     compile_binaries
     rm -rf src
     package_module "$version"
@@ -484,6 +489,6 @@ main() {
             log_info "Please restart your terminal to apply Android NDK environment variables"
         fi
     fi
-}
 
-main "$@"
+    main "$@"
+}

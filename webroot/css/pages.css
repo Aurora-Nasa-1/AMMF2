@@ -231,6 +231,49 @@ input[type="range"] + output {
     padding: 16px;
 }
 
+/* 更新提示横幅 */
+.update-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-radius: 28px;
+    margin-bottom: 16px;
+}
+
+.update-banner-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--on-surface);
+    font: var(--body-l);
+}
+
+.update-button {
+    padding: 0 24px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: var(--primary);
+    color: var(--on-primary);
+    text-decoration: none;
+    font: var(--label-l);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--tra);
+    min-width: 80px;
+}
+
+.update-button:hover {
+    background-color: color-mix(in oklch, var(--primary) 92%, black);
+    box-shadow: var(--ele1);
+}
+
+.update-button:active {
+    background-color: color-mix(in oklch, var(--primary) 88%, black);
+    transform: scale(0.98);
+}
+
 /* 状态卡片 */
 .status-card {
     background-color: var(--surface-container);
