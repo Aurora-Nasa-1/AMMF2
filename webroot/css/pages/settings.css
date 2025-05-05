@@ -19,36 +19,6 @@ input[type="range"] + output {
     color: var(--on-surface-variant);
 }
 
-/* 快捷操作按钮样式 */
-.quick-actions-container {
-    display: flex;
-    gap: 12px;
-    padding: 12px 16px;
-    border-top: 1px solid var(--outline-variant);
-    border-bottom: 1px solid var(--outline-variant);
-    background-color: var(--surface-container-high);
-}
-
-.quick-action {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 20px;
-    background-color: var(--surface-container-high);
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.quick-action:hover {
-    background-color: var(--surface-container-high);
-}
-
-.quick-action .material-symbols-rounded {
-    font-size: 18px;
-    color: var(--primary);
-}
-
 /* 颜色选择器样式 */
 .color-picker-overlay {
     position: fixed;

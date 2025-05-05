@@ -3,117 +3,181 @@
  * 基于 Material Design 3 设计系统
  */
 
-/* 日志容器 */
-.logs-container .select-container {
-    min-width: 200px;
-    max-width: 320px;
+/* 日志页面容器 */
+.logs-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 4rem);
+    gap: 1rem;
+    padding: 1rem;
 }
 
-.logs-scroll-container {
-    overflow-x: auto;
+/* 日志头部区域 */
+.logs-header {
+    padding: 1rem;
+    border-radius: 1rem;
+    background-color: var(--surface-container);
+    overflow: visible;
+}
+
+/* 搜索框容器 */
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.1rem;
+    border-radius: 0.75rem;
+    flex: 2;
+    min-width: 250px;
+    background-color: var(--surface-variant);
+    margin: 0;
+}
+
+.search-box .material-symbols-rounded {
+    color: var(--on-surface-variant);
+    font-size: 1.25rem;
+}
+
+.search-box input {
+    border: none;
+    background: none;
     width: 100%;
-    max-width: 100%;
-    background-color: var(--surface-container-low);
-    border-radius: 16px;
+    color: var(--on-surface-variant);
+    font: var(--body-l);
+    padding: 0;
 }
 
-.logs-content {
-    white-space: pre;
-    word-wrap: normal;
-    min-width: 100%;
-    display: inline-block;
+.search-box input:focus {
+    outline: none;
 }
 
-.log-content-container {
-    position: absolute;
-    width: 100%;
-    left: 0;
-    top: 0;
-    contain: content;
+/* 日志显示区域 */
+.logs-display {
+    flex: 1;
+    border-radius: 1rem;
+    background-color: var(--surface-container);
+    overflow: hidden;
+    position: relative;
 }
 
-.virtual-log-container {
+/* 虚拟滚动容器 */
+.virtual-scroll-container {
     position: relative;
     width: 100%;
-    height: 100%;
-    overflow-y: auto;
 }
 
-.log-content-viewport {
+.virtual-scroll-content {
     position: absolute;
     width: 100%;
     left: 0;
-    top: 0;
 }
 
+/* 日志行样式 */
 .log-line {
-    height: 20px;
-    line-height: 20px;
-    white-space: pre;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    contain: content;
-    transform: translateZ(0);
-    padding: 0 16px;
-    background-color: var(--surface-container);
+    padding: 0.25rem 1rem;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--surface-variant);
+    transition: background-color var(--tra);
 }
 
-/* 优化滚动条样式 */
-#logs-display-container {
-    scrollbar-width: thin;
-    scrollbar-gutter: stable;
-    overscroll-behavior: contain;
+.log-line:hover {
+    background-color: var(--surface-container-high);
 }
 
-/* 优化日志级别样式的性能 */
 .log-line-content {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.75rem;
+    width: 100%;
+    font: var(--body-m);
 }
 
-.log-level {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font: var(--label-m);
-    white-space: nowrap;
-    flex-shrink: 0;
-    contain: content;
-    justify-content: flex-start;
-}
-
-.log-level .material-symbols-rounded {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    display: inline-flex;
+/* 日志级别图标 */
+.log-level-icon {
+    font-size: 1.25rem;
+    display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* 错误级别 */
-.log-level.error {
-    background-color: var(--error-container);
-    color: var(--on-error-container);
+/* 日志级别颜色 */
+.log-line.error .log-level-icon {
+    color: var(--error);
 }
 
-/* 警告级别 */
-.log-level.warn {
-    background-color: var(--secondary-container);
-    color: var(--on-secondary-container);
+.log-line.warn .log-level-icon {
+    color: var(--secondary);
 }
 
-/* 信息级别 */
-.log-level.info {
-    background-color: var(--primary-container);
-    color: var(--on-primary-container);
+.log-line.info .log-level-icon {
+    color: var(--primary);
 }
 
-/* 调试级别 */
-.log-level.debug {
-    background-color: var(--tertiary-container);
-    color: var(--on-tertiary-container);
+.log-line.debug .log-level-icon {
+    color: var(--tertiary);
+}
+
+/* 时间戳样式 */
+.log-timestamp {
+    color: var(--on-surface-variant);
+    font: var(--label-m);
+    white-space: nowrap;
+}
+
+/* 日志消息样式 */
+.log-message {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 空状态样式 */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 1rem;
+    color: var(--on-surface-variant);
+}
+
+.empty-state .material-symbols-rounded {
+    font-size: 3rem;
+}
+
+/* 加载状态 */
+.logs-display.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* 响应式布局 */
+@media (max-width: 600px) {
+    .logs-container {
+        padding: 0.5rem;
+        gap: 0.5rem;
+        height: calc(100vh - 3.5rem);
+    }
+
+    .logs-header {
+        padding: 0.75rem;
+        margin: 0;
+    }
+
+    .logs-filters {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.25rem;
+        margin: -0.25rem;
+        gap: 0.5rem;
+    }
+
+    .file-selector,
+    .search-box {
+        min-width: 0;
+        width: 100%;
+    }
 }
