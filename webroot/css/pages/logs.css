@@ -77,11 +77,12 @@
 
 /* 日志行样式 */
 .log-line {
-    padding: 0.75rem 1rem; /* 增加内边距 */
-    display: flex;
+    padding: 0.75rem 1rem 0.75rem 80px; /* 增加左padding留出标签空间 */
+    position: relative;
     border-bottom: 1px solid var(--surface-variant);
     transition: background-color var(--tra);
-    min-height: 48px; /* 确保最小高度与虚拟滚动的itemHeight一致 */
+    min-height: 56px; /* 增加行高 */
+    line-height: 1.8; /* 设置行间距 */
 }
 
 .log-line:hover {
