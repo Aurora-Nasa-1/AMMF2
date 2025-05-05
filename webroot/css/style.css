@@ -114,10 +114,7 @@
 .header-title {
   flex: 0 1 auto;
   overflow: hidden;
-  margin: 0;
-  position: absolute;
-  left: 10%;
-  transform: translateX(-50%);
+  margin: 0 0 0 16px;
 }
 
 .header-title h1 {
