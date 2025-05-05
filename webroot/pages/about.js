@@ -6,7 +6,7 @@
 const AboutPage = {
     // 模块信息
     moduleInfo: {},
-    version: '7.1.1',
+    version: '7.2.0',
     // 配置项
     config: {
         showThemeToggle: false  // 控制是否显示主题切换按钮
