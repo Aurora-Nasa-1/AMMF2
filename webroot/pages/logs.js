@@ -22,9 +22,9 @@ const LogsPage = {
 
     // 虚拟滚动配置
     virtualScroll: {
-        itemHeight: 36,         // 每行高度(px)，增加高度以提高可读性
+        itemHeight: 48,         // 每行高度(px)，增加高度以提高可读性（从36增加到48）
         containerHeight: 0,     // 容器高度
-        bufferSize: 100,        // 缓冲区大小（增大以减少空白闪烁）
+        bufferSize: 100,        // 缓冲区大小（从100增加到200，减少空白闪烁）
         startIndex: 0,          // 起始索引
         visibleCount: 0,        // 可见行数
         totalCount: 0,          // 总行数
@@ -267,8 +267,8 @@ const LogsPage = {
         this._eventListeners.languageChanged = async () => {
             // 重新渲染UI
             await Router.refreshCurrentPage();
-            // 重新处理日志内容以更新翻译
-            await this.processLogContent();
+            // 重新加载日志内容以更新翻译
+            await this.loadLogContent(true); // 强制刷新
             // 更新容器大小并渲染
             this.updateContainerSize();
             this.renderVirtualScroll();
@@ -608,10 +608,10 @@ const LogsPage = {
             this.virtualScroll.totalCount = 0;
             return;
         }
-
+    
         // 将日志内容按行分割
         const lines = this.state.content.split('\n');
-
+    
         // 根据过滤条件处理日志行
         const filteredLines = [];
         const levelFilter = this.state.filter.level;
@@ -623,25 +623,27 @@ const LogsPage = {
             if (!line) continue; // 跳过空行
             
             // 日志级别过滤
+            let passLevelFilter = true;
             if (levelFilter !== 'all') {
                 const levelMatch = line.match(/\[(error|warn|info|debug)\]/i);
-                if (!levelMatch || levelMatch[1].toLowerCase() !== levelFilter) {
-                    continue; // 不符合级别过滤条件，跳过此行
-                }
+                passLevelFilter = levelMatch && levelMatch[1].toLowerCase() === levelFilter;
             }
             
-            // 搜索关键词过滤 - 修复搜索功能
+            if (!passLevelFilter) continue; // 不符合级别过滤条件，跳过此行
+            
+            // 搜索关键词过滤
+            let passSearchFilter = true;
             if (searchFilter) {
                 try {
-                    // 使用安全的字符串比较而不是正则表达式
-                    if (!line.toLowerCase().includes(searchFilter)) {
-                        continue; // 不符合搜索条件，跳过此行
-                    }
+                    passSearchFilter = line.toLowerCase().includes(searchFilter);
                 } catch (error) {
                     console.error('搜索过滤错误:', error);
                     // 出错时不过滤，保留该行
+                    passSearchFilter = true;
                 }
             }
+            
+            if (!passSearchFilter) continue; // 不符合搜索条件，跳过此行
             
             // 检测是否为长文本
             const isLongText = line.length > 150;
@@ -663,11 +665,14 @@ const LogsPage = {
         // 重置滚动位置
         if (this.virtualScroll.scrollTop > 0) {
             // 如果之前有滚动位置，尝试保持相对位置
-            const scrollRatio = this.virtualScroll.scrollTop / (this.virtualScroll.totalCount * this.virtualScroll.itemHeight);
+            const scrollRatio = this.virtualScroll.scrollTop / (this.virtualScroll.previousTotalCount * this.virtualScroll.itemHeight || 1);
             this.virtualScroll.scrollTop = Math.floor(scrollRatio * filteredLines.length * this.virtualScroll.itemHeight);
         } else {
             this.virtualScroll.scrollTop = 0;
         }
+        
+        // 保存当前总行数，用于下次计算滚动比例
+        this.virtualScroll.previousTotalCount = filteredLines.length;
         
         this.virtualScroll.startIndex = 0;
         

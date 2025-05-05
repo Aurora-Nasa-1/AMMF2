@@ -77,10 +77,11 @@
 
 /* 日志行样式 */
 .log-line {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem; /* 增加内边距 */
     display: flex;
     border-bottom: 1px solid var(--surface-variant);
     transition: background-color var(--tra);
+    min-height: 48px; /* 确保最小高度与虚拟滚动的itemHeight一致 */
 }
 
 .log-line:hover {
@@ -103,7 +104,7 @@
     justify-content: center;
     flex-shrink: 0;
     min-width: 24px;
-    margin-top: 2px;
+    margin-top: 0; /* 修复图标与文本的对齐问题 */
 }
 
 /* 日志级别颜色 */
@@ -129,7 +130,8 @@
     font: var(--label-m);
     white-space: nowrap;
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 0; /* 修复时间戳与文本的对齐问题 */
+    margin-right: 0.5rem; /* 增加右侧间距 */
 }
 
 /* 日志消息样式 */
@@ -139,6 +141,8 @@
     overflow-wrap: break-word;
     min-width: 0;
     line-height: 1.5;
+    display: flex;
+    align-items: center; /* 确保内容垂直居中 */
 }
 
 /* 长文本日志行 */
