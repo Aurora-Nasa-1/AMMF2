@@ -1,0 +1,117 @@
+/**
+ * AMMF WebUI 对话框和操作输出样式
+ * 基于 Material Design 3 设计系统
+ */
+
+/* 对话框样式 */
+.md-dialog {
+    background-color: var(--surface-container-high);
+    border-radius: 28px;
+    border: none;
+    padding: 24px;
+    min-width: 280px;
+    max-width: 560px;
+    overflow: hidden;
+}
+
+.md-dialog h2 {
+    font: var(--headline-s);
+    color: var(--on-surface);
+    margin: 0 0 16px;
+}
+
+.md-dialog p {
+    font: var(--body-m);
+    color: var(--on-surface-variant);
+    margin: 0 0 24px;
+}
+
+/* 对话框按钮容器 */
+.md-dialog .dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: 24px -24px -24px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--outline-variant);
+    background-color: var(--surface-container-highest);
+}
+
+/* 对话框按钮 */
+.md-dialog .dialog-button {
+    min-width: 72px;
+    height: 40px;
+    padding: 0 24px;
+    border-radius: 20px;
+    border: none;
+    font: var(--label-l);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--tra);
+}
+
+.md-dialog .dialog-button.filled {
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.md-dialog .dialog-button.filled:hover {
+    background-color: color-mix(in oklch, var(--primary) 92%, black);
+}
+
+.md-dialog .dialog-button:not(.filled) {
+    background-color: transparent;
+    color: var(--primary);
+}
+
+.md-dialog .dialog-button:not(.filled):hover {
+    background-color: color-mix(in oklch, var(--primary) 8%, transparent);
+}
+
+/* Action输出容器 */
+.action-output-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    z-index: 1000;
+    background-color: var(--surface-container-high);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.action-output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: var(--surface-container-highest);
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+.action-output-header h3 {
+    margin: 0;
+    font: var(--title-m);
+    color: var(--on-surface);
+}
+
+.action-output-content {
+    padding: 16px;
+    max-height: calc(80vh - 60px);
+    overflow-y: auto;
+    font-family: monospace;
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--on-surface);
+    background-color: var(--surface-container);
+}
+
+.action-output-content .error {
+    color: var(--error);
+}

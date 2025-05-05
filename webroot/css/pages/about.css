@@ -1,0 +1,305 @@
+/**
+ * AMMF WebUI 关于页面样式
+ * 基于 Material Design 3 设计系统
+ */
+
+.about-container {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    max-width: 800px;
+    margin: 0 auto;
+    gap: 24px;
+}
+
+.about-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 32px 0;
+}
+
+.app-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 24px;
+    background-color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.app-logo .material-symbols-rounded {
+    font-size: 48px;
+    color: var(--on-primary);
+}
+
+.about-header h2 {
+    font: var(--headline-l);
+    margin: 8px 0;
+    color: var(--on-surface);
+}
+
+.version-badge {
+    background-color: var(--secondary-container);
+    color: var(--on-secondary-container);
+    padding: 4px 16px;
+    border-radius: 16px;
+    font: var(--label-l);
+    margin: 8px 0;
+}
+
+.about-description {
+    color: var(--on-surface-variant);
+    margin: 12px 0 0;
+    font: var(--body-m);
+    max-width: 400px;
+}
+
+.about-card {
+    background-color: var(--surface-container-low);
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+.about-section {
+    padding: 24px;
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+.about-section:last-child {
+    border-bottom: none;
+}
+
+.section-title {
+    font: var(--title-m);
+    color: var(--on-surface);
+    margin: 0 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title .material-symbols-rounded {
+    color: var(--primary);
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: var(--secondary-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.info-icon .material-symbols-rounded {
+    font-size: 20px;
+    color: var(--on-secondary-container);
+}
+
+.info-content {
+    flex: 1;
+}
+
+.info-label {
+    font: var(--label-m);
+    color: var(--on-surface-variant);
+    margin-bottom: 4px;
+}
+
+.info-value {
+    font: var(--body-l);
+    color: var(--on-surface);
+}
+
+.developer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.developer-name {
+    font: var(--title-m);
+    color: var(--on-surface);
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--secondary-container);
+    color: var(--on-secondary-container);
+    border-radius: 20px;
+    text-decoration: none;
+    font: var(--label-l);
+    width: fit-content;
+    transition: all var(--tra);
+}
+
+.social-link:hover {
+    background-color: var(--primary-container);
+    color: var(--on-primary-container);
+}
+
+.about-footer {
+    text-align: center;
+    color: var(--on-surface-variant);
+    font: var(--body-s);
+    padding: 8px 0 32px;
+}
+
+/* 响应式布局调整 */
+@media (min-width: 768px) {
+    .about-container {
+        padding: 32px;
+        gap: 32px;
+        max-width: 1200px;
+        min-height: calc(100vh - 64px);
+        justify-content: center;
+    }
+
+    .about-header {
+        padding: 32px 0;
+        flex-direction: row;
+        justify-content: center;
+        gap: 48px;
+        text-align: left;
+        align-items: center;
+    }
+
+    .app-logo {
+        margin-bottom: 0;
+    }
+    
+    .about-header-content {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        justify-content: center;
+    }
+
+    .about-header h2 {
+        margin: 0;
+        line-height: 1.2;
+    }
+    
+    .about-description {
+        max-width: 600px;
+        text-align: left;
+        margin: 0;
+    }
+
+    .about-card {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 1px;
+        background-color: var(--outline-variant);
+        margin-top: 16px;
+    }
+
+    .about-section {
+        background-color: var(--surface-container-low);
+        border: none;
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .info-list {
+        gap: 24px;
+    }
+
+    .info-item {
+        gap: 24px;
+    }
+
+    .section-title {
+        margin: 0;
+    }
+}
+
+/* 低高度屏幕优化 */
+@media (min-width: 768px) and (max-height: 700px) {
+    .about-container {
+        padding: 24px;
+        gap: 24px;
+    }
+
+    .about-header {
+        padding: 16px 0;
+        gap: 32px;
+        align-items: center;
+    }
+
+    .app-logo {
+        width: 64px;
+        height: 64px;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    .app-logo .material-symbols-rounded {
+        font-size: 36px;
+    }
+
+    .about-header h2 {
+        font: var(--headline-m);
+        margin: 0;
+        line-height: 1.2;
+    }
+    
+    .about-header-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .version-badge {
+        margin: 4px 0;
+    }
+
+    .about-section {
+        padding: 24px;
+        gap: 16px;
+    }
+
+    .info-list {
+        gap: 16px;
+    }
+
+    .info-item {
+        gap: 16px;
+    }
+}
+
+/* 超宽屏幕优化 */
+@media (min-width: 1440px) {
+    .about-container {
+        max-width: 1400px;
+    }
+
+    .about-card {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

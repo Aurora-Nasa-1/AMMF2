@@ -1,0 +1,228 @@
+/**
+ * AMMF WebUI 状态页面样式
+ * 基于 Material Design 3 设计系统
+ */
+
+.status-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+}
+
+/* 更新提示横幅 */
+.update-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-radius: 28px;
+    margin-bottom: 16px;
+    background-color: var(--surface-container-low);
+}
+
+.update-banner-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--on-surface);
+    font: var(--body-l);
+}
+
+.update-button {
+    padding: 0 24px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: var(--primary);
+    color: var(--on-primary);
+    text-decoration: none;
+    font: var(--label-l);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--tra);
+    min-width: 80px;
+}
+
+.update-button:hover {
+    background-color: color-mix(in oklch, var(--primary) 92%, black);
+    box-shadow: var(--ele1);
+}
+
+.update-button:active {
+    background-color: color-mix(in oklch, var(--primary) 88%, black);
+    transform: scale(0.98);
+}
+
+/* 状态卡片 */
+.status-card {
+    background-color: var(--surface-container-low);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.status-card-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 16px 8px;
+    border-bottom: 1px solid var(--outline-variant);
+    background-color: var(--surface-container-highest);
+}
+
+.status-card-content {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+}
+
+/* 状态图标容器 */
+.status-icon-container {
+    margin-right: 16px;
+}
+
+.status-indicator {
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-indicator .material-symbols-rounded {
+    font-size: 24px;
+}
+
+/* 状态颜色 */
+.status-running,
+.status-normal-exit {
+    background-color: var(--tertiary-container);
+    color: var(--on-tertiary-container);
+}
+
+.status-stopped,
+.status-error {
+    background-color: var(--error-container);
+    color: var(--on-error-container);
+}
+
+.status-paused {
+    background-color: var(--secondary-container);
+    color: var(--on-secondary-container);
+}
+
+.status-unknown {
+    background-color: var(--surface-variant);
+    color: var(--on-surface-variant);
+}
+
+/* 状态信息容器 */
+.status-info-container {
+    flex: 1;
+}
+
+.status-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.status-title {
+    font: var(--title-m);
+    color: var(--on-surface);
+}
+
+.status-value {
+    font: var(--label-l);
+    font-weight: 500;
+}
+
+/* 状态文字颜色 */
+.status-running-text,
+.status-normal-exit-text {
+    color: var(--tertiary);
+}
+
+.status-stopped-text,
+.status-error-text {
+    color: var(--error);
+}
+
+.status-paused-text {
+    color: var(--secondary);
+}
+
+.status-unknown-text {
+    color: var(--on-surface-variant);
+}
+
+.status-update-row {
+    font: var(--body-s);
+    color: var(--on-surface-variant);
+}
+
+/* 设备信息部分 */
+.device-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    padding: 16px;
+    border-top: 1px solid var(--outline-variant);
+    background-color: var(--surface-container-highest);
+}
+
+.device-info-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.device-info-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+
+.device-info-icon .material-symbols-rounded {
+    font-size: 24px;
+    color: var(--primary);
+}
+
+.device-info-content {
+    flex: 1;
+}
+
+.device-info-label {
+    font: var(--label-l);
+    font-weight: 600;
+    color: var(--on-surface);
+    margin-bottom: 4px;
+}
+
+.device-info-value {
+    font: var(--body-m);
+    color: var(--on-surface-variant);
+}
+
+.no-info {
+    padding: 16px;
+    text-align: center;
+    color: var(--on-surface-variant);
+    font: var(--body-m);
+}
+
+/* 响应式布局调整 */
+@media (min-width: 768px) {
+    .status-page {
+        padding: 24px;
+    }
+    
+    .device-info-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    }
+}

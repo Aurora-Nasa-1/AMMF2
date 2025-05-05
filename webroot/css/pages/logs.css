@@ -1,0 +1,119 @@
+/**
+ * AMMF WebUI 日志页面样式
+ * 基于 Material Design 3 设计系统
+ */
+
+/* 日志容器 */
+.logs-container .select-container {
+    min-width: 200px;
+    max-width: 320px;
+}
+
+.logs-scroll-container {
+    overflow-x: auto;
+    width: 100%;
+    max-width: 100%;
+    background-color: var(--surface-container-low);
+    border-radius: 16px;
+}
+
+.logs-content {
+    white-space: pre;
+    word-wrap: normal;
+    min-width: 100%;
+    display: inline-block;
+}
+
+.log-content-container {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    contain: content;
+}
+
+.virtual-log-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.log-content-viewport {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+}
+
+.log-line {
+    height: 20px;
+    line-height: 20px;
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    contain: content;
+    transform: translateZ(0);
+    padding: 0 16px;
+    background-color: var(--surface-container);
+}
+
+/* 优化滚动条样式 */
+#logs-display-container {
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+    overscroll-behavior: contain;
+}
+
+/* 优化日志级别样式的性能 */
+.log-line-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.log-level {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font: var(--label-m);
+    white-space: nowrap;
+    flex-shrink: 0;
+    contain: content;
+    justify-content: flex-start;
+}
+
+.log-level .material-symbols-rounded {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 错误级别 */
+.log-level.error {
+    background-color: var(--error-container);
+    color: var(--on-error-container);
+}
+
+/* 警告级别 */
+.log-level.warn {
+    background-color: var(--secondary-container);
+    color: var(--on-secondary-container);
+}
+
+/* 信息级别 */
+.log-level.info {
+    background-color: var(--primary-container);
+    color: var(--on-primary-container);
+}
+
+/* 调试级别 */
+.log-level.debug {
+    background-color: var(--tertiary-container);
+    color: var(--on-tertiary-container);
+}

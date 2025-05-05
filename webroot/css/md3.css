@@ -1,6 +1,7 @@
 /* https://github.com/jogemu/md3css */
 
 :root {
+  --hue: 300;
   --rhw: 16rem; /* read-optimized half width */
   --fnt: "Roboto", sans-serif;
   --tra: .2s ease-in-out;
@@ -39,7 +40,7 @@
   --on-surface-variant:     light-dark(oklch(.40 .02 var(--hue)), oklch(.83 .02 var(--hue)));
   --surface-container-high: light-dark(oklch(.93 .02 var(--hue)), oklch(.29 .01 var(--hue)));
   --surface-container:      light-dark(oklch(.95 .02 var(--hue)), oklch(.24 .01 var(--hue)));
-  --surface-container-low:  light-dark(oklch(.97 .01 var(--hue)), oklch(.23 .01 var(--hue)));
+  --surface-container-low:  light-dark(oklch(.97 .01 var(--hue)), oklch(.22 .01 var(--hue)));
 
   --background:             var(--surface);
   --on-background:          var(--on-surface);
