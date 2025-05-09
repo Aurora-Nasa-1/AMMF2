@@ -290,11 +290,36 @@ const LogsPage = {
     
     // 虚拟滚动相关配置
     virtualScroll: {
-        itemHeight: 24, // 每行日志的高度
-        bufferSize: 50, // 上下缓冲区行数
-        visibleItems: [], // 当前可见的日志行
-        totalItems: [], // 所有日志行
-        scrollTop: 0
+        itemHeight: 32, // 增加每行高度以提升可读性
+        bufferSize: 100, // 增加缓冲区大小以提升滚动体验
+        visibleItems: [],
+        totalItems: [],
+        scrollTop: 0,
+        lastScrollTime: 0, // 添加滚动节流控制
+        scrollThrottle: 16 // 16ms (约60fps)
+    },
+    
+    // 处理滚动事件
+    handleScroll(event) {
+        const now = Date.now();
+        if (now - this.virtualScroll.lastScrollTime < this.virtualScroll.scrollThrottle) {
+            return; // 跳过过于频繁的更新
+        }
+        
+        const container = event.target;
+        this.virtualScroll.scrollTop = container.scrollTop;
+        this.virtualScroll.lastScrollTime = now;
+        
+        // 使用requestAnimationFrame优化滚动性能
+        if (!this._scrollRAF) {
+            this._scrollRAF = requestAnimationFrame(() => {
+                const logsDisplay = document.getElementById('logs-display');
+                if (logsDisplay) {
+                    logsDisplay.innerHTML = this.renderVirtualScroll();
+                }
+                this._scrollRAF = null;
+            });
+        }
     },
     
     // 格式化日志内容
@@ -413,20 +438,6 @@ const LogsPage = {
                 </div>
             </div>
         `;
-    },
-    
-    // 处理滚动事件
-    handleScroll(event) {
-        const container = event.target;
-        this.virtualScroll.scrollTop = container.scrollTop;
-        
-        // 使用requestAnimationFrame优化滚动性能
-        requestAnimationFrame(() => {
-            const logsDisplay = document.getElementById('logs-display');
-            if (logsDisplay) {
-                logsDisplay.innerHTML = this.renderVirtualScroll();
-            }
-        });
     },
     
     // 渲染页面
