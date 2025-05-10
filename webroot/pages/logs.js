@@ -290,8 +290,8 @@ const LogsPage = {
 
     // 虚拟滚动相关配置
     virtualScroll: {
-        itemHeight: 26,
-        bufferSize: 10, // 减少缓冲区大小，只保留少量缓冲
+        itemHeight: 48,
+        bufferSize: 10,
         visibleItems: [],
         totalItems: [],
         scrollTop: 0,

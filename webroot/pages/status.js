@@ -309,8 +309,8 @@ const StatusPage = {
     },
     async getLogCount() {
         try {
-            const result = await Core.execCommand('wc -l "' + Core.MODULE_PATH + 'logs/module.log" 2>/dev/null || echo "0"');
-            this.logCount = parseInt(result.trim().split(' ')[0]) || 0;
+            const result = await Core.execCommand('find "' + Core.MODULE_PATH + 'logs/" -type f -name "*.log" | wc -l 2>/dev/null || echo "0"');
+            this.logCount = parseInt(result.trim()) || 0;
         } catch (error) {
             console.error('获取日志数量失败:', error);
             this.logCount = 0;
@@ -541,7 +541,6 @@ const StatusPage = {
                 android: await this.getAndroidVersion(),
                 kernel: await this.getKernelVersion(),
                 root: await this.getRootImplementation(),
-                android_api: await this.getAndroidAPI(),
                 device_abi: await this.getDeviceABI()
             };
 
@@ -567,16 +566,6 @@ const StatusPage = {
             return result.trim() || 'Unknown';
         } catch (error) {
             console.error('获取Android版本失败:', error);
-            return 'Unknown';
-        }
-    },
-
-    async getAndroidAPI() {
-        try {
-            const result = await Core.execCommand('getprop ro.build.version.sdk');
-            return result.trim() || 'Unknown';
-        } catch (error) {
-            console.error('获取Android API失败:', error);
             return 'Unknown';
         }
     },
@@ -669,8 +658,7 @@ const StatusPage = {
         const infoItems = [
             { key: 'model', label: 'DEVICE_MODEL', icon: 'smartphone' },
             { key: 'android', label: 'ANDROID_VERSION', icon: 'android' },
-            { key: 'android_api', label: 'ANDROID_API', icon: 'api' },
-            { key: 'device_abi', label: 'DEVICE_ABI', icon: 'memory' },
+            { key: 'device_abi', label: 'DEVICE_ABI', icon: 'architecture' },
             { key: 'kernel', label: 'KERNEL_VERSION', icon: 'terminal' },
             { key: 'root', label: 'ROOT_IMPLEMENTATION', icon: 'security' }
         ];

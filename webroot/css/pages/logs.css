@@ -35,16 +35,6 @@
     padding: 0;
 }
 
-.log-line {
-    position: absolute;
-    width: 100%;
-    left: 0;
-    padding: var(--spacing-s) var(--spacing-m);
-    box-sizing: border-box;
-    margin: 0;
-    border-bottom: 1px solid var(--outline-variant);
-}
-
 .log-line:hover {
     background-color: color-mix(in oklch, var(--on-surface) 2%, transparent);
 }
@@ -52,16 +42,27 @@
 .log-level {
     display: inline-flex;
     align-items: center;
-    padding: var(--spacing-xs) var(--spacing-s);
+    padding: var(--spacing-xs) var(--spacing-xs);
     border-radius: var(--border-radius-s);
-    margin-right: var(--spacing-m);
+    margin-right: var(--spacing-s);
     font: var(--label-s);
-    min-width: 80px;
+    min-width: 70px;
+    background-clip: padding-box;
+}
+
+.log-line {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    padding: var(--spacing-s) var(--spacing-s);
+    box-sizing: border-box;
+    margin: 0;
 }
 
 .log-level .material-symbols-rounded {
     font-size: var(--icon-size-s);
     margin-right: var(--spacing-xs);
+    
 }
 
 .log-level.error {
