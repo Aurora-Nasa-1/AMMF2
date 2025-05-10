@@ -6,7 +6,7 @@
 const StatusPage = {
     // 模块状态
     moduleStatus: 'UNKNOWN',
-    
+
     // 自动刷新定时器
     refreshTimer: null,
 
@@ -19,17 +19,17 @@ const StatusPage = {
     latestVersion: null,
     updateAvailable: false,
     updateChecking: false,
-    
+
     // 测试模式配置
     testMode: {
         enabled: false,
         mockVersion: null
     },
-    
+
     async checkUpdate() {
         if (this.updateChecking) return; // 避免重复检查
         this.updateChecking = true;
-        
+    
         try {
             if (this.testMode.enabled) {
                 this.latestVersion = this.testMode.mockVersion;
@@ -48,21 +48,24 @@ const StatusPage = {
                 this.updateAvailable = false;
                 this.updateError = null; // 不显示错误，因为可能是没有发布版本
             }
+    
+            // 修改这里：不直接操作 DOM，而是触发一个自定义事件
+            const event = new CustomEvent('updateCheckComplete', {
+                detail: {
+                    available: this.updateAvailable,
+                    version: this.latestVersion
+                }
+            });
+            window.dispatchEvent(event);
         } catch (error) {
             console.warn('检查更新失败:', error);
             this.updateAvailable = false;
             this.updateError = error.message;
         } finally {
             this.updateChecking = false;
-            // 使用正确的方式更新UI
-            const container = document.querySelector('.status-page');
-            if (container) {
-                container.innerHTML = this.render();
-                this.afterRender();
-            }
         }
     },
-    
+
     renderUpdateBanner() {
         if (this.updateChecking) {
             return `
@@ -78,7 +81,7 @@ const StatusPage = {
                 </div>
             `;
         }
-        
+
         if (this.updateError) {
             return `
                 <div class="update-banner error">
@@ -93,7 +96,7 @@ const StatusPage = {
                 </div>
             `;
         }
-        
+
         if (this.updateAvailable) {
             return `
                 <div class="update-banner">
@@ -112,17 +115,17 @@ const StatusPage = {
                 </div>
             `;
         }
-        
+
         return '';
     },
-    
+
     // 版本检查相关方法
     parseVersion(versionStr) {
         // 支持四段式版本号和带有后缀的版本号，包括下划线和连字符分隔
         const cleanVersion = versionStr.replace(/^v/, '').replace(/[_-]/g, '-');
         const match = cleanVersion.match(/^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?(?:[-.]?([A-Za-z]+\d*)?)?$/);
         if (!match) return null;
-        
+
         return {
             major: parseInt(match[1] || '0'),
             minor: parseInt(match[2] || '0'),
@@ -131,38 +134,38 @@ const StatusPage = {
             suffix: match[5] || null  // 版本后缀（如FIX）
         };
     },
-    
+
     compareVersions(v1, v2) {
         const v1Parts = this.parseVersion(v1);
         const v2Parts = this.parseVersion(v2);
-        
+
         if (!v1Parts || !v2Parts) return 0;
-        
+
         // 比较主版本号
         if (v1Parts.major !== v2Parts.major) {
             return v1Parts.major - v2Parts.major;
         }
-        
+
         // 比较次版本号
         if (v1Parts.minor !== v2Parts.minor) {
             return v1Parts.minor - v2Parts.minor;
         }
-        
+
         // 比较修订号
         if (v1Parts.patch !== v2Parts.patch) {
             return v1Parts.patch - v2Parts.patch;
         }
-        
+
         // 比较构建号（第四段版本号）
         if (v1Parts.build !== v2Parts.build) {
             return v1Parts.build - v2Parts.build;
         }
-        
+
         // 处理版本后缀
         if (!v1Parts.suffix && !v2Parts.suffix) return 0;
         if (!v1Parts.suffix) return 1;
         if (!v2Parts.suffix) return -1;
-        
+
         // 对特殊后缀进行优先级排序
         const suffixPriority = {
             'RELEASE': 3,
@@ -170,57 +173,57 @@ const StatusPage = {
             'BETA': 1,
             'ALPHA': 0
         };
-        
+
         const v1Priority = suffixPriority[v1Parts.suffix.toUpperCase()] ?? -1;
         const v2Priority = suffixPriority[v2Parts.suffix.toUpperCase()] ?? -1;
-        
+
         if (v1Priority !== v2Priority) {
             return v1Priority - v2Priority;
         }
-        
+
         // 如果优先级相同，按字母顺序比较
         return v1Parts.suffix.localeCompare(v2Parts.suffix);
     },
-    
+
     async getLatestVersion() {
         const maxRetries = 3;
         let retryCount = 0;
-        
+
         while (retryCount < maxRetries) {
             try {
                 // 使用GitHub API获取最新发布版本
                 const response = await fetch(`https://api.github.com/repos/${this.GitHubRepo}/releases/latest`);
-                
+
                 if (!response.ok) {
                     throw new Error(`GitHub API请求失败: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
                 // 从tag_name中提取版本号（移除'v'前缀如果存在）
                 const version = data.tag_name.replace(/^v/, '');
-                
+
                 if (!this.parseVersion(version)) {
                     throw new Error(`无效的版本号格式: ${version}`);
                 }
-                
+
                 return version;
             } catch (error) {
                 console.error(`获取最新版本失败 (尝试 ${retryCount + 1}/${maxRetries}):`, error);
                 retryCount++;
-                
+
                 if (retryCount === maxRetries) {
                     console.error('达到最大重试次数，版本检查失败');
                     return null;
                 }
-                
+
                 // 等待一段时间后重试（使用指数退避）
                 await new Promise(resolve => setTimeout(resolve, Math.min(1000 * Math.pow(2, retryCount), 5000)));
             }
         }
-        
+
         return null;
     },
-    
+
     renderUpdateBanner() {
         return `
             <div class="update-banner">
@@ -239,7 +242,7 @@ const StatusPage = {
             </div>
         `;
     },
-    
+
     // 初始化
     async init() {
         try {
@@ -248,97 +251,97 @@ const StatusPage = {
             await this.loadDeviceInfo();
             // 启动自动刷新
             this.startAutoRefresh();
-            
+
             // 异步检查更新，不阻塞页面加载
             this.checkUpdate();
             // 移除这个 catch 处理，因为 checkUpdate 方法内部已经处理了错误
-            
+
             return true;
         } catch (error) {
             console.error('初始化状态页面失败:', error);
             return false;
         }
     },
-    
+
     // 渲染页面
+    // 修改 render 方法
     render() {
         // 设置页面标题
         document.getElementById('page-title').textContent = I18n.translate('NAV_STATUS', '状态');
-        
+
         const pageActions = document.getElementById('page-actions');
         pageActions.innerHTML = `
-            <button id="refresh-status" class="icon-button" title="${I18n.translate('REFRESH', '刷新')}">
-                <span class="material-symbols-rounded">refresh</span>
-            </button>
-            <button id="run-action" class="icon-button" title="${I18n.translate('RUN_ACTION', '运行Action')}">
-                <span class="material-symbols-rounded">play_arrow</span>
-            </button>
-        `;
-        
+        <button id="refresh-status" class="icon-button" title="${I18n.translate('REFRESH', '刷新')}">
+            <span class="material-symbols-rounded">refresh</span>
+        </button>
+        <button id="run-action" class="icon-button" title="${I18n.translate('RUN_ACTION', '运行Action')}">
+            <span class="material-symbols-rounded">play_arrow</span>
+        </button>
+    `;
+
         // 渲染页面内容
-        // 定义快捷按钮配置
-        const quickActionsEnabled = false; // 设置为false可全部隐藏
-        const quickActions = [
-            {
-                title: '清理缓存',
-                icon: 'delete',
-                command: 'rm -rf /data/local/tmp/*'
-            },
-            {
-                title: '重启服务',
-                icon: 'restart_alt',
-                command: 'sh ${Core.MODULE_PATH}service.sh restart'
-            },
-            {
-                title: '查看日志',
-                icon: 'description',
-                command: 'cat ${Core.MODULE_PATH}logs.txt'
-            }
-        ];
-        
         return `
-            <div class="status-page">
+        <div class="status-page">
+            <div class="update-banner-container">
                 ${this.updateAvailable ? this.renderUpdateBanner() : ''}
-                <!-- 合并的状态卡片 -->
-                <div class="card status-card">
-                    <div class="status-card-header">
-                        <span class="status-title" data-i18n="MODULE_STATUS">模块状态</span>
-                    </div>
-                    <div class="status-card-content">
-                        <div class="status-icon-container">
-                            <div class="status-indicator ${this.getStatusClass()}">
-                                <span class="material-symbols-rounded">${this.getStatusIcon()}</span>
-                            </div>
-                        </div>
-                        <div class="status-info-container">
-                            <div class="status-title-row">
-                                <span class="status-value ${this.getStatusClass()}-text" data-i18n="${this.getStatusI18nKey()}">${this.getStatusText()}</span>
-                            </div>
-                            <div class="status-update-row">
-                                <span class="status-update-time">${new Date().toLocaleString()}</span>
-                            </div>
+            </div>
+            <!-- 模块状态卡片 -->
+            <div class="status-card module-status-card ${this.getStatusClass()}">
+                <div class="status-card-content">
+                    <div class="status-icon-container">
+                        <div class="status-indicator">
+                            <span class="material-symbols-rounded">${this.getStatusIcon()}</span>
                         </div>
                     </div>
-                    
-                    ${quickActionsEnabled ? `
-                    <!-- 快捷操作按钮 -->
-                    <div class="quick-actions-container">
-                        ${quickActions.map(action => `
-                            <div class="quick-action" data-command="${action.command}">
-                                <span class="material-symbols-rounded">${action.icon}</span>
-                                <span>${action.title}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                    
-                    <!-- 设备信息部分 -->
-                    <div class="device-info-grid">
-                        ${this.renderDeviceInfo()}
+                    <div class="status-info-container">
+                        <div class="status-title-row">
+                            <span class="status-value" data-i18n="${this.getStatusI18nKey()}">${this.getStatusText()}</span>
+                        </div>
+                        <div class="status-update-row">
+                            <span class="status-update-time">${new Date().toLocaleString()}</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        `;
+            
+            <!-- 设备信息卡片 -->
+            <div class="status-card device-info-card">
+                <div class="device-info-grid">
+                    ${this.renderDeviceInfo()}
+                </div>
+            </div>
+        </div>
+    `;
+    },
+
+    async refreshStatus(showToast = false) {
+        try {
+            const oldStatus = this.moduleStatus;
+            const oldDeviceInfo = JSON.stringify(this.deviceInfo);
+
+            await this.loadModuleStatus();
+            await this.loadDeviceInfo();
+
+            // 只在状态发生变化时更新UI
+            const newDeviceInfo = JSON.stringify(this.deviceInfo);
+            if (oldStatus !== this.moduleStatus || oldDeviceInfo !== newDeviceInfo) {
+                // 更新UI
+                const statusPage = document.querySelector('.status-page');
+                if (statusPage) {
+                    statusPage.innerHTML = this.render();
+                    this.afterRender();
+                }
+            }
+
+            if (showToast) {
+                Core.showToast(I18n.translate('STATUS_REFRESHED', '状态已刷新'));
+            }
+        } catch (error) {
+            console.error('刷新状态失败:', error);
+            if (showToast) {
+                Core.showToast(I18n.translate('STATUS_REFRESH_ERROR', '刷新状态失败'), 'error');
+            }
+        }
     },
 
     // 渲染后的回调
@@ -346,14 +349,14 @@ const StatusPage = {
         // 确保只绑定一次事件
         const refreshBtn = document.getElementById('refresh-status');
         const actionBtn = document.getElementById('run-action');
-        
+
         if (refreshBtn && !refreshBtn.dataset.bound) {
             refreshBtn.addEventListener('click', () => {
                 this.refreshStatus(true);
             });
             refreshBtn.dataset.bound = 'true';
         }
-        
+
         if (actionBtn && !actionBtn.dataset.bound) {
             actionBtn.addEventListener('click', () => {
                 this.runAction();
@@ -373,7 +376,7 @@ const StatusPage = {
             });
         });
     },
-    
+
     // 运行Action脚本
     async runAction() {
         try {
@@ -389,23 +392,23 @@ const StatusPage = {
                 </div>
                 <div class="action-output-content"></div>
             `;
-            
+
             document.body.appendChild(outputContainer);
             const outputContent = outputContainer.querySelector('.action-output-content');
-            
+
             // 修复关闭按钮的事件监听
             const closeButton = outputContainer.querySelector('.close-output');
             closeButton.addEventListener('click', () => {
                 outputContainer.remove();
             });
-            
+
             Core.showToast(I18n.translate('RUNNING_ACTION', '正在运行Action...'));
             outputContent.textContent = I18n.translate('ACTION_STARTING', '正在启动Action...\n');
-            
+
             outputContainer.querySelector('.close-output').addEventListener('click', () => {
                 outputContainer.remove();
             });
-    
+
             await Core.execCommand(`busybox sh ${Core.MODULE_PATH}action.sh`, {
                 onStdout: (data) => {
                     outputContent.textContent += data + '\n';
@@ -419,7 +422,7 @@ const StatusPage = {
                     outputContent.scrollTop = outputContent.scrollHeight;
                 }
             });
-    
+
             outputContent.textContent += '\n' + I18n.translate('ACTION_COMPLETED', 'Action运行完成');
             Core.showToast(I18n.translate('ACTION_COMPLETED', 'Action运行完成'));
         } catch (error) {
@@ -427,20 +430,20 @@ const StatusPage = {
             Core.showToast(I18n.translate('ACTION_ERROR', '运行Action失败'), 'error');
         }
     },
-    
+
     // 加载模块状态
     async loadModuleStatus() {
         try {
             // 检查状态文件是否存在
             const statusPath = `${Core.MODULE_PATH}status.txt`;
             const fileExistsResult = await Core.execCommand(`[ -f "${statusPath}" ] && echo "true" || echo "false"`);
-            
+
             if (fileExistsResult.trim() !== "true") {
                 console.error(`状态文件不存在: ${statusPath}`);
                 this.moduleStatus = 'UNKNOWN';
                 return;
             }
-            
+
             // 读取状态文件
             const status = await Core.execCommand(`cat "${statusPath}"`);
             if (!status) {
@@ -448,17 +451,17 @@ const StatusPage = {
                 this.moduleStatus = 'UNKNOWN';
                 return;
             }
-            
+
             // 检查服务进程是否运行
             const isRunning = await this.isServiceRunning();
-            
+
             // 如果状态文件显示运行中，但进程检查显示没有运行，则返回STOPPED
             if (status.trim() === 'RUNNING' && !isRunning) {
                 console.warn('状态文件显示运行中，但服务进程未检测到');
                 this.moduleStatus = 'STOPPED';
                 return;
             }
-            
+
             this.moduleStatus = status.trim() || 'UNKNOWN';
         } catch (error) {
             console.error('获取模块状态失败:', error);
@@ -488,7 +491,7 @@ const StatusPage = {
                 android_api: await this.getAndroidAPI(),
                 device_abi: await this.getDeviceABI()
             };
-            
+
             console.log('设备信息加载完成:', this.deviceInfo);
         } catch (error) {
             console.error('加载设备信息失败:', error);
@@ -550,14 +553,14 @@ const StatusPage = {
             // 检查Magisk是否安装
             const magiskPath = '/data/adb/magisk';
             const magiskExists = await Core.execCommand(`[ -f "${magiskPath}" ] && echo "true" || echo "false"`);
-            
+
             if (magiskExists.trim() === "true") {
                 const version = await Core.execCommand(`cat "${magiskPath}"`);
                 if (version && version.trim()) {
                     return `Magisk ${version.trim()}`;
                 }
             }
-            
+
             // 尝试通过magisk命令获取版本
             const magiskResult = await Core.execCommand('magisk -v');
             if (magiskResult && !magiskResult.includes('not found')) {
@@ -566,19 +569,19 @@ const StatusPage = {
                     return `Magisk ${magiskVersion}`;
                 }
             }
-            
+
             // 检查KernelSU是否安装
             const ksuResult = await Core.execCommand('ksud -V');
             if (ksuResult && !ksuResult.includes('not found')) {
                 return `KernelSU ${ksuResult.trim()}`;
             }
-            
+
             // 检查APatch是否安装
             const apatchResult = await Core.execCommand('apd -V');
             if (apatchResult && !apatchResult.includes('not found')) {
                 return `APatch ${apatchResult.trim()}`;
             }
-            
+
             return 'No Root';
         } catch (error) {
             console.error('获取ROOT实现失败:', error);
@@ -608,7 +611,7 @@ const StatusPage = {
         if (!this.deviceInfo || Object.keys(this.deviceInfo).length === 0) {
             return `<div class="no-info" data-i18n="NO_DEVICE_INFO">无设备信息</div>`;
         }
-        
+
         // 设备信息项映射
         const infoItems = [
             { key: 'model', label: 'DEVICE_MODEL', icon: 'smartphone' },
@@ -618,9 +621,9 @@ const StatusPage = {
             { key: 'kernel', label: 'KERNEL_VERSION', icon: 'terminal' },
             { key: 'root', label: 'ROOT_IMPLEMENTATION', icon: 'security' }
         ];
-        
+
         let html = '';
-        
+
         infoItems.forEach(item => {
             if (this.deviceInfo[item.key]) {
                 html += `
@@ -636,69 +639,11 @@ const StatusPage = {
                 `;
             }
         });
-        
+
         return html || `<div class="no-info" data-i18n="NO_DEVICE_INFO">无设备信息</div>`;
     },
-    
-    // 刷新状态
-    async refreshStatus(showToast = false) {
-        try {
-            const oldStatus = this.moduleStatus;
-            const oldDeviceInfo = JSON.stringify(this.deviceInfo);
-            
-            await this.loadModuleStatus();
-            await this.loadDeviceInfo();
-            
-            // 只在状态发生变化时更新UI
-            const newDeviceInfo = JSON.stringify(this.deviceInfo);
-            if (oldStatus !== this.moduleStatus || oldDeviceInfo !== newDeviceInfo) {
-                // 更新UI
-                const statusPage = document.querySelector('.status-page');
-                if (statusPage) {
-                    statusPage.innerHTML = `
-                        <!-- 合并的状态卡片 -->
-                        <div class="card status-card">
-                            <div class="status-card-header">
-                                <span class="status-title" data-i18n="MODULE_STATUS">模块状态</span>
-                            </div>
-                            <div class="status-card-content">
-                                <div class="status-icon-container">
-                                    <div class="status-indicator ${this.getStatusClass()}">
-                                        <span class="material-symbols-rounded">${this.getStatusIcon()}</span>
-                                    </div>
-                                </div>
-                                <div class="status-info-container ${this.getStatusClass()}">
-                                    <div class="status-title-row">
-                                        <span class="status-value" data-i18n="${this.getStatusI18nKey()}">${this.getStatusText()}</span>
-                                    </div>
-                                    <div class="status-update-row">
-                                        <span class="status-update-time">${new Date().toLocaleString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- 设备信息部分 -->
-                            <div class="device-info-grid">
-                                ${this.renderDeviceInfo()}
-                            </div>
-                        </div>
-                    `;
-                    
-                    this.afterRender();
-                }
-            }
-            
-            if (showToast) {
-                Core.showToast(I18n.translate('STATUS_REFRESHED', '状态已刷新'));
-            }
-        } catch (error) {
-            console.error('刷新状态失败:', error);
-            if (showToast) {
-                Core.showToast(I18n.translate('STATUS_REFRESH_ERROR', '刷新状态失败'), 'error');
-            }
-        }
-    },
-    
+
+
     // 启动自动刷新
     startAutoRefresh() {
         // 每60秒刷新一次
@@ -706,7 +651,7 @@ const StatusPage = {
             this.refreshStatus();
         }, 60000);
     },
-    
+
     // 停止自动刷新
     stopAutoRefresh() {
         if (this.refreshTimer) {
@@ -714,7 +659,7 @@ const StatusPage = {
             this.refreshTimer = null;
         }
     },
-    
+
     // 获取状态类名
     getStatusClass() {
         switch (this.moduleStatus) {
@@ -726,7 +671,7 @@ const StatusPage = {
             default: return 'status-unknown';
         }
     },
-    
+
     // 获取状态图标
     getStatusIcon() {
         switch (this.moduleStatus) {
@@ -738,7 +683,7 @@ const StatusPage = {
             default: return 'help';
         }
     },
-    
+
     // 获取状态文本
     getStatusText() {
         switch (this.moduleStatus) {
@@ -760,7 +705,7 @@ const StatusPage = {
         // 启动自动刷新
         this.startAutoRefresh();
     },
-    
+
     onDeactivate() {
         console.log('状态页面已停用');
         // 停止自动刷新但保留状态数据

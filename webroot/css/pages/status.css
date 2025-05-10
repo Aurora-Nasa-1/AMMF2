@@ -1,19 +1,20 @@
 /**
  * AMMF WebUI 状态页面样式
- * 基于 Material Design 3 设计系统
+ * 基于MD3设计系统优化
  */
 
 .status-page {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 16px;
+    gap: var(--spacing-l);
+    padding: var(--spacing-l);
 }
+
 /* 快捷操作按钮样式 */
 .quick-actions-container {
     display: flex;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: var(--spacing-m);
+    padding: var(--spacing-m) var(--spacing-l);
     border-top: 1px solid var(--outline-variant);
     border-bottom: 1px solid var(--outline-variant);
     background-color: var(--surface-container-high);
@@ -22,20 +23,20 @@
 .quick-action {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 20px;
+    gap: var(--spacing-s);
+    padding: var(--spacing-s) var(--spacing-m);
+    border-radius: var(--border-radius-l);
     background-color: var(--surface-container-high);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all var(--tra);
 }
 
 .quick-action:hover {
-    background-color: var(--surface-container-high);
+    background-color: color-mix(in oklch, var(--primary) 8%, transparent);
 }
 
 .quick-action .material-symbols-rounded {
-    font-size: 18px;
+    font-size: 24px;
     color: var(--primary);
 }
 
@@ -50,7 +51,7 @@
     max-height: 80vh;
     z-index: 1000;
     background-color: var(--surface-container-high);
-    border-radius: 16px;
+    border-radius: var(--border-radius-l);
     overflow: hidden;
 }
 
@@ -58,7 +59,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
+    padding: var(--spacing-m) var(--spacing-l);
     background-color: var(--surface-container-highest);
     border-bottom: 1px solid var(--outline-variant);
 }
@@ -70,12 +71,12 @@
 }
 
 .action-output-content {
-    padding: 16px;
+    padding: var(--spacing-l);
     max-height: calc(80vh - 60px);
     overflow-y: auto;
-    font-family: monospace;
+    font-family: var(--font-mono);
     white-space: pre-wrap;
-    font-size: 14px;
+    font: var(--body-m);
     line-height: 1.5;
     color: var(--on-surface);
     background-color: var(--surface-container);
@@ -90,24 +91,24 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
-    border-radius: 28px;
-    margin-bottom: 16px;
+    padding: var(--spacing-l) var(--spacing-xl);
+    border-radius: var(--border-radius-l);
+    margin-bottom: var(--spacing-l);
     background-color: var(--surface-container-low);
 }
 
 .update-banner-content {
     display: inline-flex;
     align-items: center;
-    gap: 16px;
+    gap: var(--spacing-l);
     color: var(--on-surface);
     font: var(--body-l);
 }
 
 .update-button {
-    padding: 0 24px;
-    height: 40px;
-    border-radius: 20px;
+    padding: 0 var(--spacing-xl);
+    height: var(--icon-size);
+    border-radius: var(--border-radius-l);
     background-color: var(--primary);
     color: var(--on-primary);
     text-decoration: none;
@@ -132,33 +133,41 @@
 /* 状态卡片 */
 .status-card {
     background-color: var(--surface-container-low);
-    border-radius: 16px;
+    border-radius: var(--border-radius-l);
     overflow: hidden;
 }
 
 .status-card-header {
     display: flex;
     align-items: center;
-    padding: 16px 16px 8px;
+    padding: var(--spacing-l) var(--spacing-l) var(--spacing-s);
     border-bottom: 1px solid var(--outline-variant);
     background-color: var(--surface-container-highest);
 }
 
+/* 状态卡片 */
+.status-card {
+    border-radius: var(--border-radius-l);
+    overflow: hidden;
+}
+
+/* 状态卡片内容 */
 .status-card-content {
     display: flex;
     align-items: center;
-    padding: 16px;
+    padding: var(--spacing-l);
 }
 
 /* 状态图标容器 */
 .status-icon-container {
-    margin-right: 16px;
+    margin-right: var(--spacing-l);
 }
 
+/* 状态指示器样式 */
 .status-indicator {
     width: 48px;
     height: 48px;
-    border-radius: 24px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -168,90 +177,81 @@
     font-size: 24px;
 }
 
-/* 状态颜色 */
-.status-running,
-.status-normal-exit {
-    background-color: var(--tertiary-container);
-    color: var(--on-tertiary-container);
+/* 状态颜色 - 使用 MD3 颜色变量 */
+.module-status-card.status-running,
+.module-status-card.status-normal-exit {
+    background-color: var(--primary-container);
+    color: var(--on-primary-container);
 }
 
-.status-stopped,
-.status-error {
+.module-status-card.status-running .status-indicator,
+.module-status-card.status-normal-exit .status-indicator {
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.module-status-card.status-stopped,
+.module-status-card.status-error {
     background-color: var(--error-container);
     color: var(--on-error-container);
 }
 
-.status-paused {
+.module-status-card.status-stopped .status-indicator,
+.module-status-card.status-error .status-indicator {
+    background-color: var(--error);
+    color: var(--on-error);
+}
+
+.module-status-card.status-paused {
     background-color: var(--secondary-container);
     color: var(--on-secondary-container);
 }
 
-.status-unknown {
+.module-status-card.status-paused .status-indicator {
+    background-color: var(--secondary);
+    color: var(--on-secondary);
+}
+
+.module-status-card.status-unknown {
     background-color: var(--surface-variant);
     color: var(--on-surface-variant);
 }
 
-/* 状态信息容器 */
-.status-info-container {
-    flex: 1;
+.module-status-card.status-unknown .status-indicator {
+    background-color: var(--outline);
+    color: var(--on-surface-variant);
 }
 
-.status-title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.status-title {
-    font: var(--title-m);
-    color: var(--on-surface);
-}
-
+/* 状态文字样式 */
 .status-value {
     font: var(--label-l);
     font-weight: 500;
 }
 
-/* 状态文字颜色 */
-.status-running-text,
-.status-normal-exit-text {
-    color: var(--tertiary);
-}
-
-.status-stopped-text,
-.status-error-text {
-    color: var(--error);
-}
-
-.status-paused-text {
-    color: var(--secondary);
-}
-
-.status-unknown-text {
-    color: var(--on-surface-variant);
-}
-
 .status-update-row {
     font: var(--body-s);
-    color: var(--on-surface-variant);
+    opacity: 0.8;
 }
 
-/* 设备信息部分 */
+/* 设备信息卡片 */
+.device-info-card {
+    background-color: var(--surface-container-low);
+}
+
+/* 设备信息网格 */
 .device-info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    padding: 16px;
-    border-top: 1px solid var(--outline-variant);
+    gap: var(--spacing-l);
+    padding: var(--spacing-l);
     background-color: var(--surface-container-highest);
 }
 
 .device-info-item {
     display: flex;
     align-items: center;
-    padding: 8px;
-    border-radius: 8px;
+    padding: var(--spacing-s);
+    border-radius: var(--border-radius-s);
 }
 
 .device-info-icon {
@@ -260,7 +260,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 12px;
+    margin-right: var(--spacing-m);
 }
 
 .device-info-icon .material-symbols-rounded {
@@ -276,7 +276,7 @@
     font: var(--label-l);
     font-weight: 600;
     color: var(--on-surface);
-    margin-bottom: 4px;
+    margin-bottom: var(--spacing-xs);
 }
 
 .device-info-value {
@@ -285,7 +285,7 @@
 }
 
 .no-info {
-    padding: 16px;
+    padding: var(--spacing-l);
     text-align: center;
     color: var(--on-surface-variant);
     font: var(--body-m);
@@ -294,7 +294,7 @@
 /* 响应式布局调整 */
 @media (min-width: 768px) {
     .status-page {
-        padding: 24px;
+        padding: var(--spacing-xl);
     }
     
     .device-info-grid {
