@@ -69,7 +69,6 @@ enter_pause_mode() {
 
 # 记录启动信息
 log_info "${SERVICE_STARTED:-服务已启动}"
-start_script
 
 # 加载服务脚本
 if [ ! -f "$MODPATH/files/scripts/service_script.sh" ]; then
