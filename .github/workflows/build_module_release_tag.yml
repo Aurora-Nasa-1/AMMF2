@@ -90,13 +90,13 @@ jobs:
             $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang++ \
               $CXXFLAGS -Wall -Wextra -static-libstdc++ \
               -I src -I src/ \
-              -o "bin/${action_id}_${filename}-aarch64" "$cpp_file"
+              -o "bin/${filename}-${action_id}-aarch64" "$cpp_file"
             
             # 构建x86_64版本
             $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang++ \
               $CXXFLAGS -Wall -Wextra -static-libstdc++ \
               -I src -I src/ \
-              -o "bin/${action_id}_${filename}-x86_64" "$cpp_file"
+              -o "bin/${filename}-${action_id}-x86_64" "$cpp_file"
           done
 
       - name: Strip binaries
