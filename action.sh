@@ -4,8 +4,6 @@ MODPATH="$MODDIR"
 
 # 初始化日志目录
 LOG_DIR="$MODPATH/logs"
-mkdir -p "$LOG_DIR"
-
 
 if [ ! -f "$MODPATH/files/scripts/default_scripts/main.sh" ]; then
     echo "File not found: $MODPATH/files/scripts/default_scripts/main.sh" >> "$LOG_DIR/error.log"

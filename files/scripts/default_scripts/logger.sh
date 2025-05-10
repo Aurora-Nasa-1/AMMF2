@@ -1,11 +1,11 @@
 #!/system/bin/sh
 # 高性能日志系统 - 与C++日志组件集成
-# 版本: 2.2.0
+# 版本: 2.2.1
 
 # ============================
 # Global Variables
 # ============================
-LOGGER_VERSION="2.2.0"
+LOGGER_VERSION="2.2.1"
 LOGGER_INITIALIZED=0
 LOG_FILE_NAME="system"
 LOGMONITOR_PID=""

@@ -19,12 +19,10 @@ case "$ARCH" in
         mv "$MODPATH/bin/logmonitor-${MODID}-x86_64" "$MODPATH/bin/logmonitor-${MODID}"
         ;;
     arm|x86)
-        log_error "Unsupported architecture: $ARCH"
-        abort "Unsupported architecture"
+        abort "Unsupported architecture: $ARCH"
         ;;
     *)
-        log_error "Unknown architecture: $ARCH"
-        abort "Unknown architecture"
+        abort "Unknown architecture: $ARCH"
         ;;
 esac
 

@@ -6,7 +6,7 @@
 const AboutPage = {
     // 模块信息
     moduleInfo: {},
-    version: '7.2.0',
+    version: '7.3.0',
     // 配置项
     config: {
         showThemeToggle: false  // 控制是否显示主题切换按钮
@@ -172,8 +172,6 @@ const AboutPage = {
                 <button class="dialog-button filled" id="apply-color">${I18n.translate('APPLY', '应用')}</button>
             </div>
         `;
-
-
     
         // 添加到文档
         dialogContainer.appendChild(dialog);
