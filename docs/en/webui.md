@@ -8,27 +8,31 @@ This document provides development and customization guidelines for the WebUI pa
 
 ### File Structure
 
-WebUI-related files are located in the `webroot/` directory:
+WebUI files are located in the `webroot/` directory:
 
-```
+```text
 webroot/
-├── index.html         # Main page
+├── index.html         # Main entry
 ├── app.js             # Application logic
-├── core.js            # Core functionality
-├── i18n.js            # Multi-language support
+├── core.js            # Core functionalities
+├── i18n.js            # i18n support
 ├── style.css          # Main stylesheet
-├── theme.js           # Theme handling
+├── theme.js           # Theme management
+├── css-loader.js      # CSS loader
 ├── css/               # Style modules
-│   ├── animations.css # Animation effects
-│   ├── app.css       # Base styles
-│   ├── main-color.css # Theme color configuration
-│   ├── pages.css     # Page styles
-│   └── md3.css       # MD3 layout framework
+    ├── animations.css # Animation effects
+    ├── components.css # Component styles
+    ├── md3.css        # MD3 layout framework
+    └── pages/         # Page-specific styles
+        ├── about.css   
+        ├── logs.css 
+        ├── settings.css
+        └── status.css
 └── pages/             # Page modules
-    ├── status.js      # Status page
-    ├── logs.js        # Logs page
-    ├── settings.js    # Settings page
-    └── about.js       # About page
+    ├── about.js
+    ├── logs.js
+    ├── settings.js
+    └── status.js
 ```
 
 ## 🎨 Interface Development
@@ -36,13 +40,17 @@ webroot/
 ### Style System
 
 WebUI adopts the Material Design 3 design specification and uses a modular CSS structure:
-
-- `style.css`: Main style file that imports other CSS modules
-- `css/md3.css`: MD3 layout framework, providing base component styles
-- `css/main-color.css`: Theme color configuration
-- `css/app.css`: Application base styles
-- `css/pages.css`: Page component styles
-- `css/animations.css`: Animation effects
+```text
+css/
+├── animations.css     # Animation effects
+├── components.css     # Component styles
+├── md3.css            # MD3 layout framework
+└── pages/             # Page-specific styles
+    ├── about.css
+    ├── logs.css
+    ├── settings.css
+    └── status.css
+```
 
 ### Simple Configuration
 

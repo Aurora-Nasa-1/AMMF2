@@ -18,31 +18,35 @@ webroot/
 ├── i18n.js            # 多语言支持
 ├── style.css          # 主样式表
 ├── theme.js           # 主题管理
+├── css-loader.js      # CSS加载器
 ├── css/               # 样式模块
-│   ├── animations.css # 动画效果
-│   ├── app.css       # 基础样式
-│   ├── main-color.css # 主题色配置
-│   ├── pages.css     # 页面样式
-│   └── md3.css       # MD3布局框架
+    ├── animations.css # 动画效果
+    ├── components.css # 组件样式
+    ├── md3.css        # MD3布局框架
+    └── pages/         # 页面样式
+        ├── about.css   
+        ├── logs.css 
+        ├── settings.css
+        └── status.css
 └── pages/             # 页面模块
-    ├── status.js      # 状态页面
-    ├── logs.js        # 日志页面
-    ├── settings.js    # 设置页面
-    └── about.js       # 关于页面
+    ├── about.js
+    ├── logs.js
+    ├── settings.js
+    └── status.js
 ```
 
 ## 🎨 界面开发
 
 ### 样式系统
 
-WebUI采用Material Design 3设计规范，使用模块化的CSS结构：
-
-- `style.css`: 主样式文件，导入其他CSS模块
-- `css/md3.css`: MD3布局框架，提供基础组件样式
-- `css/main-color.css`: 主题色配置
-- `css/app.css`: 应用基础样式
-- `css/pages.css`: 页面组件样式
-- `css/animations.css`: 动画效果
+WebUI采用Material Design 3设计规范，使用模块化的CSS结构
+```css
+/* 样式模块 */
+@import url('./pages/settings.css');
+@import url('./pages/status.css');
+@import url('./pages/logs.css');
+@import url('./pages/about.css');
+```
 
 ### 简单配置
 状态页面提供了简单配置的选项：
