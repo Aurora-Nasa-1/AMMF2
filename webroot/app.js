@@ -346,32 +346,37 @@ class Router {
         }
     }
 
-    // 页面过渡效果 - 简化为纯淡入淡出
+    // 页面过渡效果
+    // 页面过渡效果
+    // 页面过渡效果
     static async performPageTransition(newContainer, oldContainer) {
         return new Promise(resolve => {
             if (oldContainer) {
                 // 先添加新容器但设为透明
                 UI.elements.mainContent.appendChild(newContainer);
                 newContainer.style.opacity = '0';
-
+                newContainer.style.transform = 'scale(0.98)';
+    
                 // 添加淡出动画类
                 oldContainer.classList.add('fade-out');
-
+    
                 // 监听动画结束
                 const onAnimationEnd = () => {
                     oldContainer.removeEventListener('animationend', onAnimationEnd);
                     oldContainer.remove();
-
+    
                     // 显示新容器
                     newContainer.style.opacity = '1';
-
+                    newContainer.style.transform = 'scale(1)';
+                    newContainer.style.transition = 'opacity 250ms cubic-bezier(0.3, 0, 0.8, 0.15), transform 250ms cubic-bezier(0.3, 0, 0.8, 0.15)';
+    
                     resolve();
                 };
-
+    
                 oldContainer.addEventListener('animationend', onAnimationEnd);
-
-                // 添加超时保护 (60ms动画 + 10ms缓冲)
-                setTimeout(onAnimationEnd, 70);
+    
+                // 添加超时保护 (150ms动画 + 30ms缓冲)
+                setTimeout(onAnimationEnd, 180);
             } else {
                 // 没有旧容器，直接添加新容器
                 UI.elements.mainContent.appendChild(newContainer);

@@ -3,15 +3,27 @@
  * 包含所有界面动画和过渡效果
  */
 
-/* 页面切换淡入淡出效果 */
+/* 页面切换淡入淡出效果 - 使用 MD3 标准的缓动曲线和优化的时长 */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+    from { 
+        opacity: 0;
+        transform: scale(0.98);
+    }
+    to { 
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+    from { 
+        opacity: 1;
+        transform: scale(1);
+    }
+    to { 
+        opacity: 0;
+        transform: scale(0.98);
+    }
 }
 
 /* 页面容器过渡效果 */
@@ -22,15 +34,15 @@
     width: 100%;
     min-height: 100%;   /* 确保最小高度占满容器 */
     opacity: 0;
-    animation: fadeIn 180ms ease-out forwards;
-    will-change: opacity, transform;
+    animation: fadeIn 250ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
+    will-change: transform, opacity;
     transform: translateZ(0);
     backface-visibility: hidden;
 }
 
 .page-container.fade-out {
     position: absolute;  /* 确保淡出时也是绝对定位 */
-    animation: fadeOut 120ms ease-out forwards;
+    animation: fadeOut 150ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
 }
 
 /* 加载动画 */
@@ -53,34 +65,34 @@
 
 /* Toast 动画效果 */
 @keyframes toastSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 @keyframes toastSlideOut {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.9);
-  }
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.98);
+    }
 }
 
 /* Toast 动画应用 */
 .toast.show {
-  animation: toastSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: toastSlideIn 250ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
 }
 
 .toast.hide {
-  animation: toastSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: toastSlideOut 150ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
 }
 
 /* 语言选择器动画 */
@@ -336,7 +348,15 @@
 .color-picker-dialog.closing {
   animation: colorPickerFadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+/* 关闭动画 */
+.log-delete-dialog.closing {
+  animation: fadeOut 0.12s ease-out;
+}
 
+@keyframes fadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
 /* 通用弹出动画 */
 @keyframes dialogFadeIn {
   from {
