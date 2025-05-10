@@ -134,14 +134,14 @@
     background-color: var(--surface-container-low);
     border-radius: 28px;
     overflow: hidden;
-    margin-bottom: var(--spacing-l);
+    margin-bottom: var(--spacing-xl);
 }
 
 /* 状态卡片内容 */
 .status-card-content {
     display: flex;
     align-items: center;
-    padding: var(--spacing-l);
+    padding: var(--spacing-xl);
     gap: var(--spacing-l);
 }
 
