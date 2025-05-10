@@ -6,7 +6,7 @@
 const AboutPage = {
     // 模块信息
     moduleInfo: {},
-    version: '7.3.0',
+    version: '7.3.1',
     // 配置项
     config: {
         showThemeToggle: false  // 控制是否显示主题切换按钮
@@ -206,16 +206,23 @@ const AboutPage = {
             preview.style.setProperty('--preview-hue', value);
         });
     
+        // 保存打开时的颜色值
+        const originalHue = this.getCurrentHue();
+    
         // 添加关闭动画
         const closeDialog = () => {
             dialogContainer.classList.add('closing');
             dialog.classList.add('closing');
             setTimeout(() => dialogContainer.remove(), 200);
         };
-    
+        
         // 添加按钮事件
-        document.getElementById('cancel-color').addEventListener('click', closeDialog);
-    
+        document.getElementById('cancel-color').addEventListener('click', () => {
+        // 恢复原始颜色值
+        this.setHueValue(originalHue);
+        closeDialog();
+        });
+        
         document.getElementById('apply-color').addEventListener('click', () => {
             this.setHueValue(slider.value);
             closeDialog();
