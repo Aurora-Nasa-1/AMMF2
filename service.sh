@@ -1,7 +1,7 @@
 #!/system/bin/sh
 MODDIR=${0%/*}
 MODPATH="$MODDIR"
-# 定义状态文件路径
+MODID=$(basename "$MODDIR")
 STATUS_FILE="$MODPATH/status.txt"
 
 # 设置初始状态为"运行中"

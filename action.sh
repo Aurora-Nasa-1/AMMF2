@@ -1,7 +1,7 @@
 #!/system/bin/sh
 MODDIR=${0%/*}
 MODPATH="$MODDIR"
-
+MODID=$(basename "$MODDIR")
 # 初始化日志目录
 LOG_DIR="$MODPATH/logs"
 
