@@ -141,6 +141,8 @@ const I18n = {
             APPLY: '应用',
             COLOR_PICKER: '颜色选择器',
             COLOR_CHANGED: '颜色已更改',
+            UPDATE_TIME: '最后更新时间',
+            LOG_COUNT: '日志数',
         };
         this.translations.en = {
             NAV_STATUS: 'Status',
@@ -276,7 +278,9 @@ const I18n = {
             UPDATE_INSTALLING: 'Installing update...',
             UPDATE_INSTALL_SUCCESS: 'Update installed',
             UPDATE_INSTALL_ERROR: 'Failed to install update',
-            UPDATE_RESTART_REQUIRED: 'Restart required to complete update'
+            UPDATE_RESTART_REQUIRED: 'Restart required to complete update',
+            UPDATE_TIME: 'Last updated time',
+            LOG_COUNT: 'Log count',
         };
         this.translations.ru = {
             NAV_STATUS: 'Статус',
@@ -412,7 +416,9 @@ const I18n = {
             UPDATE_INSTALLING: 'Установка обновления...',
             UPDATE_INSTALL_SUCCESS: 'Обновление установлено',
             UPDATE_INSTALL_ERROR: 'Ошибка установки обновления',
-            UPDATE_RESTART_REQUIRED: 'Требуется перезагрузка для завершения обновления'
+            UPDATE_RESTART_REQUIRED: 'Требуется перезагрузка для завершения обновления',
+            UPDATE_TIME: 'Последнее обновление',
+            LOG_COUNT: 'Количество журналов',
         };
         console.log('默认翻译已加载');
     },
