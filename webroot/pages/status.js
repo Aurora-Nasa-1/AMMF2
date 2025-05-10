@@ -19,7 +19,7 @@ const StatusPage = {
     latestVersion: null,
     updateAvailable: false,
     updateChecking: false,
-
+    logCount: 0,
     // 测试模式配置
     testMode: {
         enabled: false,
@@ -244,27 +244,80 @@ const StatusPage = {
     },
 
     // 初始化
+    // 添加版本信息相关属性
+    moduleInfo: {},
+    version: null,
+    
+    // 在 init 方法中添加版本信息获取
     async init() {
         try {
-            // 加载模块状态和信息
+            await this.loadModuleInfo();
             await this.loadModuleStatus();
             await this.loadDeviceInfo();
-            // 启动自动刷新
+            await this.getLogCount();
             this.startAutoRefresh();
-
-            // 异步检查更新，不阻塞页面加载
             this.checkUpdate();
-            // 移除这个 catch 处理，因为 checkUpdate 方法内部已经处理了错误
-
             return true;
         } catch (error) {
             console.error('初始化状态页面失败:', error);
             return false;
         }
     },
+    
+    // 添加加载模块信息的方法
+    async loadModuleInfo() {
+        try {
+            // 检查是否有缓存的模块信息
+            const cachedInfo = sessionStorage.getItem('moduleInfo');
+            if (cachedInfo) {
+                this.moduleInfo = JSON.parse(cachedInfo);
+                this.version = this.moduleInfo.version || 'Unknown';
+                return;
+            }
+            
+            // 尝试从配置文件获取模块信息
+            const configOutput = await Core.execCommand(`cat "${Core.MODULE_PATH}module.prop"`);
+            
+            if (configOutput) {
+                // 解析配置文件
+                const lines = configOutput.split('\n');
+                const config = {};
+                
+                lines.forEach(line => {
+                    const parts = line.split('=');
+                    if (parts.length >= 2) {
+                        const key = parts[0].trim();
+                        const value = parts.slice(1).join('=').trim();
+                        config[key] = value;
+                    }
+                });
+                
+                this.moduleInfo = config;
+                this.version = config.version || 'Unknown';
+                // 缓存模块信息
+                sessionStorage.setItem('moduleInfo', JSON.stringify(config));
+            } else {
+                console.warn('无法读取模块配置文件');
+                this.moduleInfo = {};
+                this.version = 'Unknown';
+            }
+        } catch (error) {
+            console.error('加载模块信息失败:', error);
+            this.moduleInfo = {};
+            this.version = 'Unknown';
+        }
+    },
+    async getLogCount() {
+        try {
+            const result = await Core.execCommand('wc -l "' + Core.MODULE_PATH + 'logs/module.log" 2>/dev/null || echo "0"');
+            this.logCount = parseInt(result.trim().split(' ')[0]) || 0;
+        } catch (error) {
+            console.error('获取日志数量失败:', error);
+            this.logCount = 0;
+        }
+    },
 
-    // 渲染页面
-    // 修改 render 方法
+    // 修改渲染方法中的状态卡片部分
     render() {
         // 设置页面标题
         document.getElementById('page-title').textContent = I18n.translate('NAV_STATUS', '状态');
@@ -289,16 +342,16 @@ const StatusPage = {
             <div class="status-card module-status-card ${this.getStatusClass()}">
                 <div class="status-card-content">
                     <div class="status-icon-container">
-                        <div class="status-indicator">
                             <span class="material-symbols-rounded">${this.getStatusIcon()}</span>
-                        </div>
                     </div>
                     <div class="status-info-container">
                         <div class="status-title-row">
                             <span class="status-value" data-i18n="${this.getStatusI18nKey()}">${this.getStatusText()}</span>
                         </div>
-                        <div class="status-update-row">
-                            <span class="status-update-time">${new Date().toLocaleString()}</span>
+                        <div class="status-details">
+                            <div class="status-detail-row">${I18n.translate('VERSION', '版本')}: ${this.version}</div>
+                            <div class="status-detail-row">${I18n.translate('UPDATE_TIME', '最后更新时间')}: ${new Date().toLocaleTimeString()}</div>
+                            <div class="status-detail-row">${I18n.translate('LOG_COUNT', '日志数')}: ${this.logCount}</div>
                         </div>
                     </div>
                 </div>

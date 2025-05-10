@@ -51,7 +51,7 @@
     max-height: 80vh;
     z-index: 1000;
     background-color: var(--surface-container-high);
-    border-radius: var(--border-radius-l);
+    border-radius: 28px;
     overflow: hidden;
 }
 
@@ -92,7 +92,7 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-l) var(--spacing-xl);
-    border-radius: var(--border-radius-l);
+    border-radius: 28px;
     margin-bottom: var(--spacing-l);
     background-color: var(--surface-container-low);
 }
@@ -108,7 +108,7 @@
 .update-button {
     padding: 0 var(--spacing-xl);
     height: var(--icon-size);
-    border-radius: var(--border-radius-l);
+    border-radius: 20px;
     background-color: var(--primary);
     color: var(--on-primary);
     text-decoration: none;
@@ -122,7 +122,6 @@
 
 .update-button:hover {
     background-color: color-mix(in oklch, var(--primary) 92%, black);
-    box-shadow: var(--ele1);
 }
 
 .update-button:active {
@@ -133,22 +132,9 @@
 /* 状态卡片 */
 .status-card {
     background-color: var(--surface-container-low);
-    border-radius: var(--border-radius-l);
+    border-radius: 28px;
     overflow: hidden;
-}
-
-.status-card-header {
-    display: flex;
-    align-items: center;
-    padding: var(--spacing-l) var(--spacing-l) var(--spacing-s);
-    border-bottom: 1px solid var(--outline-variant);
-    background-color: var(--surface-container-highest);
-}
-
-/* 状态卡片 */
-.status-card {
-    border-radius: var(--border-radius-l);
-    overflow: hidden;
+    margin-bottom: var(--spacing-l);
 }
 
 /* 状态卡片内容 */
@@ -156,38 +142,61 @@
     display: flex;
     align-items: center;
     padding: var(--spacing-l);
+    gap: var(--spacing-l);
 }
 
 /* 状态图标容器 */
 .status-icon-container {
-    margin-right: var(--spacing-l);
-}
-
-/* 状态指示器样式 */
-.status-indicator {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: var(--spacing-xs);
 }
 
-.status-indicator .material-symbols-rounded {
-    font-size: 24px;
+/* 状态指示器 */
+.status-indicator {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
 }
 
-/* 状态颜色 - 使用 MD3 颜色变量 */
+/* 状态信息容器 */
+.status-info-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.status-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-m);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* 状态详情行 */
+.status-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+/* 状态详情项 */
+.status-detail-row {
+    font: var(--body-m);
+}
+
+/* 修改各种状态下的文字颜色 */
 .module-status-card.status-running,
 .module-status-card.status-normal-exit {
     background-color: var(--primary-container);
     color: var(--on-primary-container);
-}
-
-.module-status-card.status-running .status-indicator,
-.module-status-card.status-normal-exit .status-indicator {
-    background-color: var(--primary);
-    color: var(--on-primary);
 }
 
 .module-status-card.status-stopped,
@@ -196,20 +205,9 @@
     color: var(--on-error-container);
 }
 
-.module-status-card.status-stopped .status-indicator,
-.module-status-card.status-error .status-indicator {
-    background-color: var(--error);
-    color: var(--on-error);
-}
-
 .module-status-card.status-paused {
     background-color: var(--secondary-container);
     color: var(--on-secondary-container);
-}
-
-.module-status-card.status-paused .status-indicator {
-    background-color: var(--secondary);
-    color: var(--on-secondary);
 }
 
 .module-status-card.status-unknown {
@@ -220,17 +218,6 @@
 .module-status-card.status-unknown .status-indicator {
     background-color: var(--outline);
     color: var(--on-surface-variant);
-}
-
-/* 状态文字样式 */
-.status-value {
-    font: var(--label-l);
-    font-weight: 500;
-}
-
-.status-update-row {
-    font: var(--body-s);
-    opacity: 0.8;
 }
 
 /* 设备信息卡片 */
@@ -296,7 +283,7 @@
     .status-page {
         padding: var(--spacing-xl);
     }
-    
+
     .device-info-grid {
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     }
