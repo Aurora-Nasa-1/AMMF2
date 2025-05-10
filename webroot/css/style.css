@@ -283,14 +283,28 @@ html, body, #main-content, .language-options, .app-nav {
 
 /* ===== 响应式布局 ===== */
 @media (max-width: 480px) {
-  #toast-container {
-    bottom: 90px;
-  }
   
   .toast {
     max-width: 90%;
     padding: 10px 14px 18px;
     border-radius: var(--border-radius-s);
+  }
+  .page-container {
+    padding: 0;
+    margin: 0;
+  }
+
+  .about-container,
+  .status-page,
+  .settings-content,
+  .logs-container {
+    padding: var(--spacing-xs);
+    margin: 0 auto;
+  }
+
+  #toast-container {
+    bottom: 80px;
+    padding: var(--spacing-xs);
   }
 }
 
