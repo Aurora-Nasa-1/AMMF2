@@ -45,6 +45,7 @@ start_script() {
         . "$NOW_PATH/files/scripts/default_scripts/logger.sh"
         # 设置main脚本的日志文件
         set_log_file "main"
+        init_logger
         log_info "${SCRIPT_INIT_COMPLETE:-开始执行脚本 - 初始化完成}"
     else
         echo "${LOGGER_NOT_LOADED:-警告: 日志系统未加载}" >&2

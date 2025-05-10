@@ -79,6 +79,7 @@ jobs:
 
       - name: Find and build all C++ files
         run: |
+          . module_settings/config.sh
           export CFLAGS="-O3 -flto"
           export CXXFLAGS="-O3 -flto -std=c++20"
           # 查找所有cpp文件并构建
@@ -89,13 +90,13 @@ jobs:
             $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang++ \
               $CXXFLAGS -Wall -Wextra -static-libstdc++ \
               -I src -I src/ \
-              -o "bin/${filename}-aarch64" "$cpp_file"
+              -o "bin/${action_id}_${filename}-aarch64" "$cpp_file"
             
             # 构建x86_64版本
             $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang++ \
               $CXXFLAGS -Wall -Wextra -static-libstdc++ \
               -I src -I src/ \
-              -o "bin/${filename}-x86_64" "$cpp_file"
+              -o "bin/${action_id}_${filename}-x86_64" "$cpp_file"
           done
 
       - name: Strip binaries

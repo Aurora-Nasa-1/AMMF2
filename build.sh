@@ -411,7 +411,7 @@ compile_binaries() {
         for target in "${targets[@]}"; do
             (
                 log_info "Compiling $source for $target..."
-                local output="bin/$source-$target"
+                local output="bin/${action_id}_${source}-${target}"
                 local cpp_file="src/$source.cpp"
 
                 # 修复 Linux 下的路径和权限问题

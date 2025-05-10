@@ -9,47 +9,44 @@
 # 初始化日志目录
 LOG_DIR="$MODPATH/logs"
 mkdir -p "$LOG_DIR"
-if [ "$ARCH" = "arm64" ]; then
-    rm -f "$MODPATH/bin/logmonitor-x86_64" 2>/dev/null
-    mv "$MODPATH/bin/logmonitor-aarch64" "$MODPATH/bin/logmonitor"
-    chmod 755 "$MODPATH/bin/logmonitor"
-
-fi
-if [ "$ARCH" = "x64" ]; then
-    rm -f "$MODPATH/bin/logmonitor-aarch64" 2>/dev/null
-    mv "$MODPATH/bin/logmonitor-x86_64" "$MODPATH/bin/logmonitor"
-    chmod 755 "$MODPATH/bin/logmonitor"
-fi
-# 启动日志监控器（如果存在）
-if [ -f "$MODPATH/bin/logmonitor" ]; then
-    # 检查是否已经启动
-    if ! pgrep -f "$MODPATH/bin/logmonitor.*-c daemon" >/dev/null; then
-        "$MODPATH/bin/logmonitor" -c start -d "$LOG_DIR" >/dev/null 2>&1 &
-    fi
-    # 设置日志文件名为install
-    "$MODPATH/bin/logmonitor" -c write -n "install" -m "开始安装过程" -l 3 >/dev/null 2>&1
-fi
-
+case "$ARCH" in
+    arm64)
+        rm -f "$MODPATH/bin/logmonitor-${MODID}-x86_64" 2>/dev/null
+        mv "$MODPATH/bin/logmonitor-${MODID}-aarch64" "$MODPATH/bin/logmonitor-${MODID}"
+        ;;
+    x64)
+        rm -f "$MODPATH/bin/logmonitor-${MODID}-aarch64" 2>/dev/null
+        mv "$MODPATH/bin/logmonitor-${MODID}-x86_64" "$MODPATH/bin/logmonitor-${MODID}"
+        ;;
+    arm|x86)
+        log_error "Unsupported architecture: $ARCH"
+        abort "Unsupported architecture"
+        ;;
+    *)
+        log_error "Unknown architecture: $ARCH"
+        abort "Unknown architecture"
+        ;;
+esac
 
 main() {
 
     if [ ! -f "$MODPATH/files/scripts/default_scripts/main.sh" ]; then
-        log_error "Notfound File!!!($MODPATH/files/scripts/default_scripts/main.sh)"
         abort "Notfound File!!!($MODPATH/files/scripts/default_scripts/main.sh)"
     else
         . "$MODPATH/files/scripts/default_scripts/main.sh"
     fi
 
     start_script
+    set_log_file "install"
     version_check
     if [ "$ARCH" = "arm64" ]; then
-        rm -f "$MODPATH/bin/filewatch-x86_64"
-        mv "$MODPATH/bin/filewatch-aarch64" "$MODPATH/bin/filewatch"
+        rm -f "$MODPATH/bin/filewatch-${MODID}-x86_64"
+        mv "$MODPATH/bin/filewatch-${MODID}-aarch64" "$MODPATH/bin/filewatch-${MODID}"
         log_info "Architecture: arm64, using aarch64 binary"
     fi
     if [ "$ARCH" = "x64" ]; then
-        rm -f "$MODPATH/bin/filewatch-aarch64"
-        mv "$MODPATH/bin/filewatch-x86_64" "$MODPATH/bin/filewatch"
+        rm -f "$MODPATH/bin/filewatch-${MODID}-aarch64"
+        mv "$MODPATH/bin/filewatch-${MODID}-x86_64" "$MODPATH/bin/filewatch-${MODID}"
         log_info "Architecture: x64, using x86_64 binary"
     fi
 

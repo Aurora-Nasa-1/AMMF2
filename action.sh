@@ -6,24 +6,15 @@ MODPATH="$MODDIR"
 LOG_DIR="$MODPATH/logs"
 mkdir -p "$LOG_DIR"
 
-# 启动日志监控器（如果存在）
-if [ -f "$MODPATH/bin/logmonitor" ]; then
-    # 检查是否已经启动
-    if ! pgrep -f "$MODPATH/bin/logmonitor.*-c daemon" >/dev/null; then
-        "$MODPATH/bin/logmonitor" -c start -d "$LOG_DIR" >/dev/null 2>&1 &
-    fi
-    # 设置日志文件名为action
-    "$MODPATH/bin/logmonitor" -c write -n "action" -m "action.sh 被调用" -l 3 >/dev/null 2>&1
-fi
 
 if [ ! -f "$MODPATH/files/scripts/default_scripts/main.sh" ]; then
-    log_error "File not found: $MODPATH/files/scripts/default_scripts/main.sh"
+    echo "File not found: $MODPATH/files/scripts/default_scripts/main.sh" >> "$LOG_DIR/error.log"
     exit 1
 else
     . "$MODPATH/files/scripts/default_scripts/main.sh"
     # 记录action.sh被调用
     start_script
-    log_info "action.sh was called with parameters: $*"
+    set_log_file "action"
 fi
 # 在这里添加您的自定义脚本逻辑
 # -----------------
