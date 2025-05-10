@@ -1,15 +1,15 @@
 /**
  * AMMF WebUI 关于页面样式
- * 基于 Material Design 3 设计系统
+ * 基于MD3设计系统优化
  */
 
-.about-container {
+ .about-container {
     display: flex;
     flex-direction: column;
-    padding: 16px;
+    padding: var(--spacing-l);
     max-width: 800px;
     margin: 0 auto;
-    gap: 24px;
+    gap: var(--spacing-xl);
 }
 
 .about-header {
@@ -17,18 +17,18 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 32px 0;
+    padding: var(--spacing-xxl) 0;
 }
 
 .app-logo {
     width: 80px;
     height: 80px;
-    border-radius: 24px;
+    border-radius: var(--border-radius-l);
     background-color: var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 16px;
+    margin-bottom: var(--spacing-l);
 }
 
 .app-logo .material-symbols-rounded {
@@ -38,34 +38,34 @@
 
 .about-header h2 {
     font: var(--headline-l);
-    margin: 8px 0;
+    margin: var(--spacing-s) 0;
     color: var(--on-surface);
 }
 
 .version-badge {
     background-color: var(--secondary-container);
     color: var(--on-secondary-container);
-    padding: 4px 16px;
-    border-radius: 16px;
+    padding: var(--spacing-xs) var(--spacing-l);
+    border-radius: var(--border-radius-l);
     font: var(--label-l);
-    margin: 8px 0;
+    margin: var(--spacing-s) 0;
 }
 
 .about-description {
     color: var(--on-surface-variant);
-    margin: 12px 0 0;
+    margin: var(--spacing-m) 0 0;
     font: var(--body-m);
     max-width: 400px;
 }
 
 .about-card {
     background-color: var(--surface-container-low);
-    border-radius: 24px;
+    border-radius: var(--border-radius-l);
     overflow: hidden;
 }
 
 .about-section {
-    padding: 24px;
+    padding: var(--spacing-xl);
     border-bottom: 1px solid var(--outline-variant);
 }
 
@@ -76,10 +76,10 @@
 .section-title {
     font: var(--title-m);
     color: var(--on-surface);
-    margin: 0 0 16px;
+    margin: 0 0 var(--spacing-l);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-s);
 }
 
 .section-title .material-symbols-rounded {
@@ -89,19 +89,19 @@
 .info-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--spacing-l);
 }
 
 .info-item {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: var(--spacing-l);
 }
 
 .info-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    border-radius: 50%;
     background-color: var(--secondary-container);
     display: flex;
     align-items: center;
@@ -110,7 +110,7 @@
 }
 
 .info-icon .material-symbols-rounded {
-    font-size: 20px;
+    font-size: var(--icon-size-m);
     color: var(--on-secondary-container);
 }
 
@@ -121,7 +121,7 @@
 .info-label {
     font: var(--label-m);
     color: var(--on-surface-variant);
-    margin-bottom: 4px;
+    margin-bottom: var(--spacing-xs);
 }
 
 .info-value {
@@ -132,7 +132,7 @@
 .developer-info {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--spacing-l);
 }
 
 .developer-name {
@@ -143,11 +143,11 @@
 .social-link {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
+    gap: var(--spacing-s);
+    padding: var(--spacing-s) var(--spacing-l);
     background-color: var(--secondary-container);
     color: var(--on-secondary-container);
-    border-radius: 20px;
+    border-radius: var(--border-radius-l);
     text-decoration: none;
     font: var(--label-l);
     width: fit-content;
@@ -163,7 +163,7 @@
     text-align: center;
     color: var(--on-surface-variant);
     font: var(--body-s);
-    padding: 8px 0 32px;
+    padding: var(--spacing-s) 0 var(--spacing-xxl);
 }
 
 /* 颜色选择器样式 */
@@ -182,20 +182,20 @@
 
 .color-picker-dialog {
     background-color: var(--surface-container-high);
-    border-radius: 28px;
+    border-radius: var(--border-radius-l);
     width: min(90%, 400px);
     overflow: hidden;
-    margin: 24px;
+    margin: var(--spacing-xl);
 }
 
 .color-picker-content {
-    padding: 24px;
+    padding: var(--spacing-xl);
 }
 
 .preset-colors {
     display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
+    gap: var(--spacing-s);
+    margin-bottom: var(--spacing-l);
     justify-content: center;
     flex-wrap: wrap;
 }
@@ -206,8 +206,8 @@
     border-radius: 50%;
     cursor: pointer;
     overflow: hidden;
-    border: 2px solid var(--surface-variant);
-    transition: transform 0.2s;
+    border: 2px solid var(--outline);
+    transition: transform var(--tra);
 }
 
 .preset-color:hover {
@@ -223,14 +223,14 @@
 .hue-slider-container {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-top: 8px;
+    gap: var(--spacing-l);
+    margin-top: var(--spacing-s);
 }
 
 .hue-slider-container input[type="range"] {
     flex: 1;
-    height: 40px;
-    border-radius: 20px;
+    height: var(--icon-size);
+    border-radius: var(--border-radius-l);
     background: linear-gradient(to right,
         hsl(0, 100%, 50%),
         hsl(60, 100%, 50%),
@@ -243,12 +243,12 @@
 }
 
 .hue-preview {
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    border-radius: 50%;
     background-color: hsl(var(--preview-hue), 100%, 50%);
     border: 2px solid var(--outline);
-    transition: background-color 0.2s;
+    transition: background-color var(--tra);
 }
 
 #hue-value {
@@ -261,18 +261,18 @@
 /* 响应式布局调整 */
 @media (min-width: 768px) {
     .about-container {
-        padding: 32px;
-        gap: 32px;
+        padding: var(--spacing-xxl);
+        gap: var(--spacing-xxl);
         max-width: 1200px;
-        min-height: calc(100vh - 64px);
+        min-height: calc(100vh - var(--header-height));
         justify-content: center;
     }
 
     .about-header {
-        padding: 32px 0;
+        padding: var(--spacing-xxl) 0;
         flex-direction: row;
         justify-content: center;
-        gap: 48px;
+        gap: var(--spacing-xxl);
         text-align: left;
         align-items: center;
     }
@@ -285,7 +285,7 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: var(--spacing-l);
         justify-content: center;
     }
 
@@ -305,24 +305,24 @@
         grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
         gap: 1px;
         background-color: var(--outline-variant);
-        margin-top: 16px;
+        margin-top: var(--spacing-l);
     }
 
     .about-section {
         background-color: var(--surface-container-low);
         border: none;
-        padding: 32px;
+        padding: var(--spacing-xxl);
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: var(--spacing-xl);
     }
 
     .info-list {
-        gap: 24px;
+        gap: var(--spacing-xl);
     }
 
     .info-item {
-        gap: 24px;
+        gap: var(--spacing-xl);
     }
 
     .section-title {
@@ -333,13 +333,13 @@
 /* 低高度屏幕优化 */
 @media (min-width: 768px) and (max-height: 700px) {
     .about-container {
-        padding: 24px;
-        gap: 24px;
+        padding: var(--spacing-xl);
+        gap: var(--spacing-xl);
     }
 
     .about-header {
-        padding: 16px 0;
-        gap: 32px;
+        padding: var(--spacing-l) 0;
+        gap: var(--spacing-xxl);
         align-items: center;
     }
 
@@ -368,20 +368,20 @@
     }
 
     .version-badge {
-        margin: 4px 0;
+        margin: var(--spacing-xs) 0;
     }
 
     .about-section {
-        padding: 24px;
-        gap: 16px;
+        padding: var(--spacing-xl);
+        gap: var(--spacing-l);
     }
 
     .info-list {
-        gap: 16px;
+        gap: var(--spacing-l);
     }
 
     .info-item {
-        gap: 16px;
+        gap: var(--spacing-l);
     }
 }
 

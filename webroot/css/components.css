@@ -3,13 +3,15 @@
  * 基于MD3设计系统规范优化
  */
 
+/* 使用style.css中定义的间距变量 */
+
 /* ===== 错误容器 ===== */
 .error-container {
-    padding: 24px;
+    padding: var(--spacing-xl);
     border-radius: var(--border-radius-s);
     background-color: var(--error-container);
     color: var(--on-error-container);
-    margin: 16px 0;
+    margin: var(--spacing-l) 0;
 }
 
 .error-container h2 {
@@ -56,11 +58,11 @@
     width: min(90%, 560px);
     max-height: 80vh;
     overflow: hidden;
-    margin: 24px;
+    margin: var(--spacing-xl);
 }
 
 .language-selector-header {
-    padding: 24px;
+    padding: var(--spacing-xl);
 }
 
 .language-selector-header h3 {
@@ -73,18 +75,18 @@
 }
 
 .language-options {
-    padding: 8px 0;
+    padding: var(--spacing-s) 0;
     max-height: 60vh;
     overflow-y: auto;
 }
 
 .language-option {
-    padding: 16px 24px;
+    padding: var(--spacing-l) var(--spacing-xl);
     cursor: pointer;
     transition: background-color var(--tra);
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--spacing-m);
     min-height: 12px;
 }
 
@@ -100,7 +102,7 @@
 .language-selector-footer {
     display: flex;
     justify-content: flex-end;
-    padding: 16px 24px;
+    padding: var(--spacing-l) var(--spacing-xl);
     border-top: 1px solid var(--outline-variant);
 }
 
@@ -110,7 +112,7 @@
     justify-content: center;
     line-height: 1;
     font: var(--label-l);
-    padding: 10px 24px;
+    padding: 10px var(--spacing-xl);
     border-radius: var(--border-radius-m);
     background-color: var(--primary);
     color: var(--on-primary);
@@ -132,7 +134,7 @@
     height: 24px;
     border: 2px solid var(--outline);
     border-radius: 50%;
-    margin: 0 12px 0 0;
+    margin: 0 var(--spacing-m) 0 0;
     position: relative;
     transition: border-color var(--tra), background-color var(--tra);
 }
@@ -178,7 +180,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
+    padding: var(--spacing-l);
     border-bottom: 1px solid var(--outline-variant);
 }
 
@@ -197,14 +199,14 @@
     z-index: 1000;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--spacing-s);
     pointer-events: none;
     max-width: 90vw;
     width: 100%;
 }
 
 .toast {
-    padding: 16px 16px 24px;
+    padding: var(--spacing-l) var(--spacing-l) var(--spacing-xl);
     border-radius: var(--border-radius-m);
     background-color: var(--surface-container-high);
     color: var(--on-surface);
@@ -220,7 +222,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 12px;
+    gap: var(--spacing-m);
     text-align: left;
     overflow: hidden;
     position: relative;
@@ -243,7 +245,7 @@
 .toast::after {
     content: "";
     position: absolute;
-    bottom: 8px;
+    bottom: var(--spacing-s);
     left: 50%;
     transform: translateX(-50%);
     width: 40%;
@@ -307,15 +309,14 @@
     visibility: visible;
 }
 
-
 /**
- * AMMF WebUI 通用组件样式
- * 基于 Material Design 3 设计系统
- */
+   * AMMF WebUI 通用组件样式
+   * 基于 Material Design 3 设计系统
+   */
 
 /* 空状态 */
 .empty-state {
-    padding: 16px;
+    padding: var(--spacing-l);
     text-align: center;
     color: var(--on-surface-variant);
     font: var(--body-m);
@@ -346,12 +347,13 @@
     border-top-color: var(--primary);
     animation: spin 1s ease-in-out infinite;
 }
+
 /* 对话框样式 */
 .md-dialog {
     background-color: var(--surface-container-high);
     border-radius: 28px;
     border: none;
-    padding: 24px;
+    padding: var(--spacing-xl);
     min-width: 280px;
     max-width: 560px;
     overflow: hidden;
@@ -360,22 +362,22 @@
 .md-dialog h2 {
     font: var(--headline-s);
     color: var(--on-surface);
-    margin: 0 0 16px;
+    margin: 0 0 var(--spacing-l);
 }
 
 .md-dialog p {
     font: var(--body-m);
     color: var(--on-surface-variant);
-    margin: 0 0 24px;
+    margin: 0 0 var(--spacing-xl);
 }
 
 /* 对话框按钮容器 */
 .md-dialog .dialog-buttons {
     display: flex;
     justify-content: flex-end;
-    gap: 8px;
-    margin: 24px -24px -24px;
-    padding: 16px 24px;
+    gap: var(--spacing-s);
+    margin: var(--spacing-xl) calc(-1 * var(--spacing-xl)) calc(-1 * var(--spacing-xl));
+    padding: var(--spacing-l) var(--spacing-xl);
     border-top: 1px solid var(--outline-variant);
     background-color: var(--surface-container-highest);
 }
@@ -384,7 +386,7 @@
 .md-dialog .dialog-button {
     min-width: 72px;
     height: 40px;
-    padding: 0 24px;
+    padding: 0 var(--spacing-xl);
     border-radius: 20px;
     border: none;
     font: var(--label-l);
@@ -414,6 +416,11 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

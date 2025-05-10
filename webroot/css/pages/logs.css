@@ -1,92 +1,94 @@
-.logs-container {
-    padding: 16px;
-    height: calc(100vh - 120px); /* 增加容器高度，减去顶部导航和padding的空间 */
+/**
+ * AMMF WebUI 日志页面样式
+ * 基于MD3设计系统优化
+ */
+
+ .logs-container {
+    padding: var(--spacing-s);
+    height: calc(100vh - var(--header-height));
     display: flex;
     flex-direction: column;
-}
-
-.card {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0; /* 确保flex布局正常工作 */
-}
-
-.card-content {
-    flex: 1;
-    min-height: 0; /* 确保flex布局正常工作 */
-    overflow: hidden;
 }
 
 .logs-scroll-container {
     position: relative;
     overflow-y: auto;
     width: 100%;
-    height: 100%; /* 填充父容器 */
-}
-
-.log-line {
-    display: flex;
-    align-items: flex-start;
-    padding: 8px 12px; /* 增加水平内边距 */
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    min-height: 32px; /* 确保最小高度 */
-}
-
-.log-line:hover {
-    background-color: rgba(0, 0, 0, 0.02);
-}
-
-.log-level {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-right: 12px;
-    font-size: 12px;
-    font-weight: 500;
-    min-width: 80px;
-}
-
-.log-level .material-symbols-rounded {
-    font-size: 16px;
-    margin-right: 4px;
-}
-
-.log-level.error {
-    color: #B3261E;
-    background-color: #F9DEDC;
-}
-
-.log-level.warn {
-    color: #7D5700;
-    background-color: #FEF0C7;
-}
-
-.log-level.info {
-    color: #1B72E8;
-    background-color: #E8F0FE;
-}
-
-.log-level.debug {
-    color: #1B1B1F;
-    background-color: #E3E2E6;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 32px;
-    color: rgba(0, 0, 0, 0.6);
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .virtual-scroll-container {
     position: relative;
     width: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .virtual-scroll-content {
     position: absolute;
     width: 100%;
+    left: 0;
+    top: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.log-line {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    padding: var(--spacing-s) var(--spacing-m);
+    box-sizing: border-box;
+    margin: 0;
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+.log-line:hover {
+    background-color: color-mix(in oklch, var(--on-surface) 2%, transparent);
+}
+
+.log-level {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-s);
+    border-radius: var(--border-radius-s);
+    margin-right: var(--spacing-m);
+    font: var(--label-s);
+    min-width: 80px;
+}
+
+.log-level .material-symbols-rounded {
+    font-size: var(--icon-size-s);
+    margin-right: var(--spacing-xs);
+}
+
+.log-level.error {
+    color: var(--error);
+    background-color: var(--error-container);
+}
+
+.log-level.warn {
+    color: var(--secondary);
+    background-color: var(--secondary-container);
+}
+
+.log-level.info {
+    color: var(--primary);
+    background-color: var(--primary-container);
+}
+
+.log-level.debug {
+    color: var(--on-surface);
+    background-color: var(--surface-container-high);
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-xxl);
+    color: var(--on-surface-variant);
+    font: var(--body-m);
 }
 
 /* 加载状态样式 */
@@ -97,68 +99,27 @@
 
 /* 日志删除对话框样式 */
 .log-delete-dialog {
-    padding: 24px;
-    border-radius: 16px;
+    padding: var(--spacing-xl);
+    border-radius: var(--border-radius-l);
     border: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--ele2);
     max-width: 400px;
     width: 90%;
+    background-color: var(--surface-container);
 }
 
 .log-delete-dialog::backdrop {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: oklch(0 0 0 / .4);
 }
 
 .log-delete-dialog h2 {
-    margin: 0 0 16px 0;
-    font-size: 20px;
-    font-weight: 500;
+    margin: 0 0 var(--spacing-l) 0;
+    font: var(--headline-s);
+    color: var(--on-surface);
 }
 
 .log-delete-dialog p {
-    margin: 0 0 24px 0;
-    color: rgba(0, 0, 0, 0.7);
-}
-
-.dialog-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-}
-
-.dialog-button {
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: none;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.dialog-button:not(.filled) {
-    background-color: transparent;
-    color: #1B72E8;
-}
-
-.dialog-button.filled {
-    background-color: #1B72E8;
-    color: white;
-}
-
-.dialog-button:hover {
-    background-color: rgba(27, 114, 232, 0.08);
-}
-
-.dialog-button.filled:hover {
-    background-color: #1557B0;
-}
-
-/* 关闭动画 */
-.log-delete-dialog.closing {
-    animation: fadeOut 0.12s ease-out;
-}
-
-@keyframes fadeOut {
-    from { opacity: 1; transform: scale(1); }
-    to { opacity: 0; transform: scale(0.95); }
+    margin: 0 0 var(--spacing-xl) 0;
+    color: var(--on-surface-variant);
+    font: var(--body-m);
 }

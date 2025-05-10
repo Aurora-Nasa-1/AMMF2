@@ -13,6 +13,7 @@
 
 /* ===== 基础变量 ===== */
 :root {
+  /* 基于MD3的尺寸规范调整 */
   --header-height: 64px;
   --nav-height: 78px;
   --icon-size: 40px;
@@ -20,6 +21,14 @@
   --border-radius-m: 20px;
   --border-radius-s: 16px;
   --scrollbar-width: 6px;
+  
+  /* 标准间距变量 */
+  --spacing-xs: 4px;
+  --spacing-s: 8px;
+  --spacing-m: 12px;
+  --spacing-l: 16px;
+  --spacing-xl: 24px;
+  --spacing-xxl: 32px;
 }
 
 /* ===== 基础布局 ===== */
@@ -59,7 +68,8 @@
   color: var(--color);
   cursor: pointer;
   transition: background-color var(--tra);
-  @extend .flex-center;
+  align-items: center;
+  justify-content: center;
 }
 
 .icon-button:hover {
@@ -82,13 +92,15 @@
   top: 0;
   z-index: 10;
   height: var(--header-height);
-  padding-inline: 16px;
+  padding-inline: var(--spacing-l);
   background-color: transparent;
   color: var(--on-surface);
   transition: background-color var(--tra);
   border-radius: 0 0 var(--border-radius-l) var(--border-radius-l);
   border: none;
-  @extend .flex-center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .app-header.header-solid {
@@ -107,13 +119,13 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 16px;
+  gap: var(--spacing-l);
 }
 
 .header-title {
   flex: 0 1 auto;
   overflow: hidden;
-  margin: 0 0 0 16px;
+  margin: 0 0 0 var(--spacing-l);
 }
 
 .header-title h1 {
@@ -127,8 +139,9 @@
 
 .header-actions {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-m);
   margin-left: auto;
   z-index: 1;
 }
@@ -145,7 +158,7 @@
 
 /* 页面容器 */
 .page-container {
-  padding: 6px;
+  padding: var(--spacing-xs);
   margin: 0;
   width: 100%;
   max-width: none;
@@ -158,7 +171,7 @@
 .logs-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 8px;
+  padding: var(--spacing-s);
 }
 
 /* ===== 底部导航栏 ===== */
@@ -271,114 +284,114 @@ html, body, #main-content, .language-options, .app-nav {
 /* ===== 响应式布局 ===== */
 @media (max-width: 480px) {
   #toast-container {
-      bottom: 90px;
+    bottom: 90px;
   }
   
   .toast {
-      max-width: 90%;
-      padding: 10px 14px 18px;
-      border-radius: var(--border-radius-s);
+    max-width: 90%;
+    padding: 10px 14px 18px;
+    border-radius: var(--border-radius-s);
   }
 }
 
 @media (min-width: 768px) {
   :root {
-      --main: 0;
-      --rhw: 0;
+    --main: 0;
+    --rhw: 0;
   }
 
   #app {
-      flex-direction: row;
+    flex-direction: row;
   }
 
   #main-content {
-      margin-left: 80px;
-      width: calc(100% - 80px);
+    margin-left: 80px;
+    width: calc(100% - 80px);
   }
 
   .app-header {
-      display: none !important;
+    display: none !important;
   }
 
   .app-nav {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 80px;
-      height: 100vh;
-      border-radius: 0;
-      border-right: 1px solid var(--outline-variant);
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 80px;
+    height: 100vh;
+    border-radius: 0;
+    border-right: 1px solid var(--outline-variant);
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .nav-content {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 8px 0;
-      margin: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      justify-content: space-between;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+    margin: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    justify-content: space-between;
   }
 
   .nav-item {
-      flex: 0 0 56px;
-      padding: 8px 0;
-      margin: 0;
-      width: 100%;
+    flex: 0 0 56px;
+    padding: 8px 0;
+    margin: 0;
+    width: 100%;
   }
 
   .nav-content > *:not(.system-actions) {
-      flex-shrink: 0;
+    flex-shrink: 0;
   }
 
   .nav-content .icon-button {
-      width: var(--icon-size);
-      height: var(--icon-size);
-      border-radius: var(--border-radius-m);
+    width: var(--icon-size);
+    height: var(--icon-size);
+    border-radius: var(--border-radius-m);
   }
 
   .nav-content ul {
-      display: flex;
-      flex-direction: column;
-      padding: 0;
-      margin: 0 0 8px 0;
-      gap: 4px;
-      height: 240px;
-      flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0 0 8px 0;
+    gap: 4px;
+    height: 240px;
+    flex-shrink: 0;
   }
 
   .nav-content .page-actions {
-      margin: auto;
-      padding: 12px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: center;
-      background-color: var(--surface-container-high);
-      border-radius: var(--border-radius-s);
-      width: 56px;
-      min-height: 144px;
-      overflow-y: auto;
-      flex-shrink: 0;
-      justify-content: center;
+    margin: auto;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    background-color: var(--surface-container-low);
+    border-radius: var(--border-radius-s);
+    width: 56px;
+    min-height: 144px;
+    overflow-y: auto;
+    flex-shrink: 0;
+    justify-content: center;
   }
 
   .nav-content .system-actions {
-      margin-top: auto;
-      padding: 8px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: center;
-      border-top: 1px solid var(--outline-variant);
-      flex-shrink: 0;
-      background-color: var(--surface-container);
-      width: 100%;
+    margin-top: auto;
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    border-top: 1px solid var(--outline-variant);
+    flex-shrink: 0;
+    background-color: var(--surface-container);
+    width: 100%;
   }
 }
 
@@ -390,6 +403,7 @@ html, body, #main-content, .language-options, .app-nav {
 :root[data-theme="light"] {
   color-scheme: light;
 }
+
 * {
   -webkit-tap-highlight-color: transparent;
 }
