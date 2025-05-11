@@ -219,7 +219,7 @@
   font-size: 25px;
   padding: 3px 18px;
   border-radius: var(--border-radius-m);
-  transition: all var(--tra);
+  transition: all var(--tra), padding 200ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 .nav-item span:not(.material-symbols-rounded) {

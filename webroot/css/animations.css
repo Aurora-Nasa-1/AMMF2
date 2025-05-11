@@ -284,7 +284,19 @@
     opacity: 1;
   }
 }
+@keyframes navPaddingExpand {
+  from {
+      padding: 3px 8px;
+  }
+  to {
+      padding: 3px 18px;
+  }
+}
 
+/* 在导航项激活状态应用动画 */
+.nav-item.active .material-symbols-rounded {
+  animation: navPaddingExpand 200ms cubic-bezier(0.2, 0, 0.2, 1) forwards;
+}
 .app-nav.hidden {
   animation: navSlideOut 400ms cubic-bezier(0.68, 0, 0.27, 1.55) forwards;
 }
