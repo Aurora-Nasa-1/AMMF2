@@ -728,23 +728,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 初始化顶栏状态
     UI.updateHeaderTransparency();
-    // 初始化所有底栏覆盖层
-    document.querySelectorAll('.bottom-overlay').forEach(overlay => {
-        // 点击背景时隐藏
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                UI.hideOverlay(overlay);
-            }
-        });
-
-        // 点击关闭按钮时隐藏
-        const closeButton = overlay.querySelector('.close-button');
-        if (closeButton) {
-            closeButton.addEventListener('click', () => {
-                UI.hideOverlay(overlay);
-            });
-        }
-    });
 
     // 绑定窗口大小变化事件
     window.addEventListener('resize', () => {

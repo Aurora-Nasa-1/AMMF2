@@ -13,11 +13,6 @@ const LogsPage = {
     // 日志内容
     logContent: '',
 
-    // 自动刷新设置
-    autoRefresh: false,
-    refreshTimer: null,
-    refreshInterval: 5000, // 5秒刷新一次
-
     // 初始化
     async init() {
         try {
@@ -33,7 +28,6 @@ const LogsPage = {
 
             // 扫描可用的日志文件
             await this.scanLogFiles();
-
             // 设置默认日志文件
             if (Object.keys(this.logFiles).length > 0) {
                 this.currentLogFile = Object.keys(this.logFiles)[0];
@@ -41,7 +35,6 @@ const LogsPage = {
             } else {
                 this.logContent = I18n.translate('NO_LOGS_FILES', '没有找到日志文件');
             }
-
             return true;
         } catch (error) {
             console.error(I18n.translate('LOGS_INIT_ERROR', '初始化日志页面失败:'), error);
@@ -258,25 +251,6 @@ const LogsPage = {
         }
     },
 
-    // 启动/停止自动刷新
-    toggleAutoRefresh(enable) {
-        if (enable) {
-            if (this.refreshTimer) {
-                clearInterval(this.refreshTimer);
-            }
-            this.autoRefresh = true;
-            this.refreshTimer = setInterval(() => this.loadLogContent(), this.refreshInterval);
-            console.log(I18n.translate('AUTO_REFRESH_STARTED', '自动刷新已启动'));
-        } else {
-            if (this.refreshTimer) {
-                clearInterval(this.refreshTimer);
-                this.refreshTimer = null;
-            }
-            this.autoRefresh = false;
-            console.log(I18n.translate('AUTO_REFRESH_STOPPED', '自动刷新已停止'));
-        }
-    },
-
     // HTML转义
     escapeHtml(text) {
         if (!text) return '';
@@ -299,48 +273,14 @@ const LogsPage = {
         scrollThrottle: 16
     },
 
-    // 渲染虚拟滚动
-    renderVirtualScroll() {
-        const totalHeight = this.virtualScroll.totalItems.length * this.virtualScroll.itemHeight;
-        const containerHeight = document.getElementById('logs-display-container')?.clientHeight || 500;
-        const visibleCount = Math.ceil(containerHeight / this.virtualScroll.itemHeight);
-
-        // 计算可见区域的起始索引，确保从顶部开始
-        const startIndex = Math.max(0, Math.floor(this.virtualScroll.scrollTop / this.virtualScroll.itemHeight) - this.virtualScroll.bufferSize);
-        const endIndex = Math.min(
-            this.virtualScroll.totalItems.length,
-            startIndex + visibleCount + 2 * this.virtualScroll.bufferSize
-        );
-
-        // 获取可见项并设置精确的定位
-        this.virtualScroll.visibleItems = this.virtualScroll.totalItems.slice(startIndex, endIndex);
-
-        return `
-            <div class="virtual-scroll-container" style="height: ${totalHeight}px;">
-                <div class="virtual-scroll-content">
-                    ${this.virtualScroll.visibleItems.map((item, index) =>
-            `<div class="log-line" style="top: ${(startIndex + index) * this.virtualScroll.itemHeight}px;">${item.content}</div>`
-        ).join('')}
-                </div>
-            </div>
-        `;
-    },
-
-    // 初始化日志显示
-    initLogs() {
-        const container = document.getElementById('logs-display-container');
-        if (container) {
-            container.addEventListener('scroll', this.handleScroll.bind(this));
-            // 初始渲染
-            this.formatLogContent();
-        }
-    },
-
-    // 清理资源
     destroy() {
         const container = document.getElementById('logs-display-container');
         if (container) {
-            container.removeEventListener('scroll', this.handleScroll.bind(this));
+            container.removeEventListener('scroll', this.handleScroll);
+            // 移除所有动态创建的事件监听
+            container.querySelectorAll('*').forEach(element => {
+                element.replaceWith(element.cloneNode(true));
+            });
         }
     },
 
@@ -445,18 +385,29 @@ const LogsPage = {
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
 
-        if (diffMins < 1) return '刚刚';
-        if (diffMins < 60) return `${diffMins}分钟前`;
-        if (diffHours < 24 && date >= today) return `今天 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-        if (date >= yesterday && date < today) return `昨天 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+        const timeStr = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+        if (diffMins < 1) return I18n.translate('LOG_TIME_JUST_NOW', '刚刚');
+        if (diffMins < 60) return I18n.translate('LOG_TIME_MINUTES_AGO', '{minutes}分钟前', { minutes: diffMins });
+        if (diffHours < 24 && date >= today) return I18n.translate('LOG_TIME_TODAY', '今天 {time}', { time: timeStr });
+        if (date >= yesterday && date < today) return I18n.translate('LOG_TIME_YESTERDAY', '昨天 {time}', { time: timeStr });
 
         // 一年内的日期显示月日
         if (date.getFullYear() === now.getFullYear()) {
-            return `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+            return I18n.translate('LOG_TIME_THIS_YEAR', '{month}月{day}日 {time}', {
+                month: date.getMonth() + 1,
+                day: date.getDate(),
+                time: timeStr
+            });
         }
 
         // 超过一年显示完整日期
-        return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+        return I18n.translate('LOG_TIME_FULL_DATE', '{year}/{month}/{day} {time}', {
+            year: date.getFullYear(),
+            month: date.getMonth() + 1,
+            day: date.getDate(),
+            time: timeStr
+        });
     },
 
     // 渲染虚拟滚动
@@ -551,11 +502,6 @@ const LogsPage = {
             this.loadLogContent(true);
         });
 
-        // 自动刷新切换事件
-        document.getElementById('auto-refresh-checkbox')?.addEventListener('change', (e) => {
-            this.toggleAutoRefresh(e.target.checked);
-        });
-
         // 清除日志按钮事件
         document.getElementById('clear-logs')?.addEventListener('click', () => {
             this.clearLog();
@@ -565,12 +511,6 @@ const LogsPage = {
         document.getElementById('export-logs')?.addEventListener('click', () => {
             this.exportLog();
         });
-
-        // 如果设置了自动刷新，启动自动刷新
-        if (this.autoRefresh) {
-            this.toggleAutoRefresh(true);
-        }
-
         // 添加日志显示区域的样式
         const logsDisplay = document.getElementById('logs-display');
         if (logsDisplay) {
@@ -584,7 +524,31 @@ const LogsPage = {
 
         // 设置日志容器高度
         this.adjustLogContainerHeight();
+        document.addEventListener('languageChanged', async () => {
+            // 更新页面标题
+            document.getElementById('page-title').textContent = I18n.translate('NAV_LOGS', '日志');
 
+            // 更新操作按钮的标题
+            const refreshButton = document.getElementById('refresh-logs');
+            if (refreshButton) {
+                refreshButton.title = I18n.translate('REFRESH_LOGS', '刷新日志');
+            }
+            const exportButton = document.getElementById('export-logs');
+            if (exportButton) {
+                exportButton.title = I18n.translate('EXPORT_LOGS', '导出日志');
+            }
+            const clearButton = document.getElementById('clear-logs');
+            if (clearButton) {
+                clearButton.title = I18n.translate('CLEAR_LOGS', '清除日志');
+            }
+
+            // 重新渲染日志文件选择器
+            const logFileSelect = document.getElementById('log-file-select');
+            if (logFileSelect) {
+                logFileSelect.innerHTML = this.renderLogFileOptions();
+            }
+                await this.loadLogContent(true);
+        });
         // 监听窗口大小变化
         window.addEventListener('resize', this.adjustLogContainerHeight);
     },
@@ -616,9 +580,6 @@ const LogsPage = {
             }
             // 加载日志内容
             this.loadLogContent();
-            // 启动自动刷新
-            this.autoRefresh && this.toggleAutoRefresh(true);
-            // 调整容器高度
             this.adjustLogContainerHeight();
         });
 
@@ -627,8 +588,6 @@ const LogsPage = {
     },
 
     onDeactivate() {
-        this.toggleAutoRefresh(false);
-        // 移除窗口大小变化监听
         window.removeEventListener('resize', this.adjustLogContainerHeight);
     }
 };

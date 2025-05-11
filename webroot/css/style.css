@@ -13,9 +13,8 @@
 
 /* ===== 基础变量 ===== */
 :root {
-  /* 基于MD3的尺寸规范调整 */
-  --header-height: 64px;
-  --nav-height: 78px;
+  --header-height: 58px;
+  --nav-height: 83px;
   --icon-size: 40px;
   --border-radius-l: 24px;
   --border-radius-m: 20px;
@@ -92,11 +91,10 @@
   top: 0;
   z-index: 10;
   height: var(--header-height);
-  padding-inline: var(--spacing-l);
+  padding-inline: var(--spacing-xs) var(--spacing-m);
   background-color: transparent;
   color: var(--on-surface);
-  transition: background-color var(--tra);
-  border-radius: 0 0 var(--border-radius-l) var(--border-radius-l);
+  transition: background-color 0.4s ease, box-shadow 0.4s ease;
   border: none;
   display: flex;
   align-items: center;
@@ -130,7 +128,8 @@
 
 .header-title h1 {
   margin: 0;
-  font: var(--title-l);
+  font-size: 22px;
+  font-weight: 520;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -185,7 +184,6 @@
   color: var(--on-surface);
   box-shadow: var(--ele1);
   transition: background-color var(--tra);
-  border-radius: var(--border-radius-l) var(--border-radius-l) 0 0;
   padding-bottom: env(safe-area-inset-bottom);
   will-change: transform, opacity;
   transform: translateZ(0);
@@ -199,7 +197,7 @@
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
-  padding: 6px 4px;
+  padding: 2px 2px;
 }
 
 .nav-item {
@@ -218,14 +216,15 @@
 }
 
 .nav-item .material-symbols-rounded {
-  font-size: 24px;
-  padding: 2px 16px;
+  font-size: 25px;
+  padding: 3px 18px;
   border-radius: var(--border-radius-m);
   transition: all var(--tra);
 }
 
 .nav-item span:not(.material-symbols-rounded) {
-  font-size: 12px;
+  font-size: 13px;
+  color: var(--on-surface-variant);
   max-height: 0;
   opacity: 0;
   transition: all var(--tra);
@@ -233,8 +232,8 @@
 }
 
 .nav-item.active {
-  color: var(--on-surface);
-  font-weight: 500;
+  color: var(--on-surface-variant);
+  font-weight: 520;
 }
 
 .nav-item.active span:not(.material-symbols-rounded) {

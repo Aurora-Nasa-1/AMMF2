@@ -5,49 +5,57 @@
 
 /* 页面切换淡入淡出效果 - 使用 MD3 标准的缓动曲线和优化的时长 */
 @keyframes fadeIn {
-    from { 
-        opacity: 0;
-        transform: scale(0.98);
-    }
-    to { 
-        opacity: 1;
-        transform: scale(1);
-    }
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes fadeOut {
-    from { 
-        opacity: 1;
-        transform: scale(1);
-    }
-    to { 
-        opacity: 0;
-        transform: scale(0.98);
-    }
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
 }
 
 /* 页面容器过渡效果 */
 .page-container {
-    position: relative;  /* 改为相对定位 */
-    top: 0;             /* 固定在顶部 */
-    left: 0;
-    width: 100%;
-    min-height: 100%;   /* 确保最小高度占满容器 */
-    opacity: 0;
-    animation: fadeIn 250ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
-    will-change: transform, opacity;
-    transform: translateZ(0);
-    backface-visibility: hidden;
+  position: relative;
+  /* 改为相对定位 */
+  top: 0;
+  /* 固定在顶部 */
+  left: 0;
+  width: 100%;
+  min-height: 100%;
+  /* 确保最小高度占满容器 */
+  opacity: 0;
+  animation: fadeIn 250ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .page-container.fade-out {
-    position: absolute;  /* 确保淡出时也是绝对定位 */
-    animation: fadeOut 150ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
+  position: absolute;
+  /* 确保淡出时也是绝对定位 */
+  animation: fadeOut 150ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
 }
 
 /* 加载动画 */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .spinner {
@@ -65,45 +73,57 @@
 
 /* Toast 动画效果 */
 @keyframes toastSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(16px) scale(0.98);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes toastSlideOut {
-    from {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: translateY(-16px) scale(0.98);
-    }
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.98);
+  }
 }
 
 /* Toast 动画应用 */
 .toast.show {
-    animation: toastSlideIn 250ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
+  animation: toastSlideIn 250ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
 }
 
 .toast.hide {
-    animation: toastSlideOut 150ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
+  animation: toastSlideOut 150ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
 }
 
 /* 语言选择器动画 */
 @keyframes languageSelectorFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes languageSelectorFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 /* 语言选择器动画应用 */
@@ -114,6 +134,7 @@
 .language-selector.closing {
   animation: languageSelectorFadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
 .log-delete-dialog {
   opacity: 0;
   animation: fadeIn 180ms ease-out forwards;
@@ -129,6 +150,7 @@
     background-color: var(--surface-container-highest);
     border-color: var(--outline);
   }
+
   to {
     background-color: var(--primary);
     border-color: var(--primary);
@@ -140,6 +162,7 @@
     background-color: var(--primary);
     border-color: var(--primary);
   }
+
   to {
     background-color: var(--surface-container-highest);
     border-color: var(--outline);
@@ -151,11 +174,13 @@
     transform: translateX(-50%);
     background-color: var(--outline);
   }
+
   50% {
     transform: translateX(0%);
     width: 24px;
     height: 24px;
   }
+
   100% {
     transform: translateX(50%);
     background-color: var(--on-primary);
@@ -167,11 +192,13 @@
     transform: translateX(50%);
     background-color: var(--on-primary);
   }
+
   50% {
     transform: translateX(0%);
     width: 24px;
     height: 24px;
   }
+
   100% {
     transform: translateX(-50%);
     background-color: var(--outline);
@@ -184,9 +211,11 @@
     transform: scale(0.8);
     opacity: 0;
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -198,9 +227,11 @@
     transform: scale(0);
     opacity: 0;
   }
+
   50% {
     transform: scale(1.2);
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -223,80 +254,85 @@
     transform: scale(0);
     opacity: 0.5;
   }
+
   100% {
     transform: scale(1.5);
     opacity: 0;
   }
 }
 
-
-/* 底栏显示隐藏动画 */
 @keyframes navSlideOut {
-    from {
-        transform: translateY(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateY(100%);
-        opacity: 0;
-    }
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(100%);
+    opacity: 0.8;
+  }
 }
 
 @keyframes navSlideIn {
-    from {
-        transform: translateY(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+  from {
+    transform: translateY(100%);
+    opacity: 0.8;
+  }
+
+  to {
+    transform: translateY(0%);
+    opacity: 1;
+  }
 }
 
 .app-nav.hidden {
-    animation: navSlideOut 0.3s ease-out forwards;
+  animation: navSlideOut 400ms cubic-bezier(0.68, 0, 0.27, 1.55) forwards;
 }
 
 .app-nav.visible {
-    animation: navSlideIn 0.3s ease-out forwards;
+  animation: navSlideIn 200ms cubic-bezier(0.68, 0, 0.27, 0)  forwards;
 }
 
 /* 导航项文字动画 */
 @keyframes navTextSlideIn {
-    from {
-        max-height: 0;
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    to {
-        max-height: 20px;
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    max-height: 20px;
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes navTextSlideOut {
-    from {
-        max-height: 20px;
-        opacity: 1;
-        transform: translateY(0);
-    }
-    to {
-        max-height: 0;
-        opacity: 0;
-        transform: translateY(-8px);
-    }
+  from {
+    max-height: 20px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-8px);
+  }
 }
 
 /* 导航项激活状态动画 */
 .nav-item.active span:not(.material-symbols-rounded) {
-    animation: navTextSlideIn 0.3s ease-out forwards;
-    display: block; /* 确保文字始终占据空间 */
+  animation: navTextSlideIn 0.3s ease-out forwards;
+  display: block;
+  /* 确保文字始终占据空间 */
 }
 
 .nav-item:not(.active) span:not(.material-symbols-rounded) {
-    animation: navTextSlideOut 0.3s ease-out forwards;
-    display: block; /* 确保文字始终占据空间 */
+  animation: navTextSlideOut 0.3s ease-out forwards;
+  display: block;
+  /* 确保文字始终占据空间 */
 }
 
 /* 颜色选择器动画 */
@@ -305,6 +341,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -316,6 +353,7 @@
     opacity: 1;
     transform: scale(1);
   }
+
   to {
     opacity: 0;
     transform: scale(0.95);
@@ -324,13 +362,23 @@
 
 /* 颜色选择器遮罩层动画 */
 @keyframes overlayFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes overlayFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 .color-picker-overlay {
@@ -348,21 +396,31 @@
 .color-picker-dialog.closing {
   animation: colorPickerFadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
 /* 关闭动画 */
 .log-delete-dialog.closing {
   animation: fadeOut 0.12s ease-out;
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; transform: scale(1); }
-  to { opacity: 0; transform: scale(0.95); }
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
 }
+
 /* 通用弹出动画 */
 @keyframes dialogFadeIn {
   from {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -374,6 +432,7 @@
     opacity: 1;
     transform: scale(1);
   }
+
   to {
     opacity: 0;
     transform: scale(0.95);
@@ -381,13 +440,23 @@
 }
 
 @keyframes overlayFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes overlayFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 /* 语言选择器动画 */
