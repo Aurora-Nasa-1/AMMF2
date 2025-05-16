@@ -107,6 +107,10 @@
     max-width: 400px;
     width: 90%;
     background-color: var(--surface-container);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .log-delete-dialog::backdrop {

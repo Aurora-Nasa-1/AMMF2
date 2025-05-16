@@ -92,7 +92,6 @@ const LogsPage = {
             this.logFiles = {};
         }
     },
-
     // 加载日志内容
     async loadLogContent(showToast = false) {
         try {
@@ -547,7 +546,7 @@ const LogsPage = {
             if (logFileSelect) {
                 logFileSelect.innerHTML = this.renderLogFileOptions();
             }
-                await this.loadLogContent(true);
+                await this.loadLogContent(false);
         });
         // 监听窗口大小变化
         window.addEventListener('resize', this.adjustLogContainerHeight);
