@@ -2,55 +2,6 @@
  * AMMF WebUI 动画样式
  * 包含所有界面动画和过渡效果
  */
-
-/* 页面切换淡入淡出效果 - 使用 MD3 标准的缓动曲线和优化的时长 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  to {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-}
-
-/* 页面容器过渡效果 */
-.page-container {
-  position: relative;
-  /* 改为相对定位 */
-  top: 0;
-  /* 固定在顶部 */
-  left: 0;
-  width: 100%;
-  min-height: 100%;
-  /* 确保最小高度占满容器 */
-  opacity: 0;
-  animation: fadeIn 250ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-.page-container.fade-out {
-  position: absolute;
-  /* 确保淡出时也是绝对定位 */
-  animation: fadeOut 150ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
-}
-
 /* 加载动画 */
 @keyframes spin {
   to {

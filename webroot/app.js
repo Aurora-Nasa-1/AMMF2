@@ -130,14 +130,24 @@ class App {
         const temp = document.createElement('div');
         temp.innerHTML = processedTemplate;
         
-        // 应用动画类
+        // 优化动画应用逻辑
         if (renderOptions.animate) {
-            // 为每个顶级子元素添加淡入动画类
-            Array.from(temp.children).forEach(child => {
-                child.classList.add('fade-in');
-                // 使用随机延迟创建错落有致的动画效果
-                child.style.animationDelay = `${Math.random() * 0.2}s`;
-            });
+            const children = Array.from(temp.children);
+            // 使用 IntersectionObserver 监测元素可见性，只对可见元素应用动画
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const element = entry.target;
+                        element.classList.add('fade-in');
+                        // 使用 CSS变量控制延迟，避免JavaScript计算
+                        element.style.setProperty('--animation-delay', 
+                            `${(Array.from(element.parentNode.children).indexOf(element) * 0.05)}s`);
+                        observer.unobserve(element);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            children.forEach(child => observer.observe(child));
         }
         
         // 添加到容器
@@ -256,24 +266,37 @@ class Router {
         requestIdleCallback(() => {
             const pageOrder = ['status', 'settings', 'logs', 'about'];
             const currentPage = app.state.currentPage;
-
-            // 移除当前页面
+            
+            // 使用 Promise.allSettled 替代 Promise.all，避免单个页面加载失败影响其他页面
+            // 并使用 requestAnimationFrame 分批加载，减少主线程阻塞
             const pagesToLoad = pageOrder.filter(page => page !== currentPage);
-
-            // 并行预加载页面
-            Promise.all(pagesToLoad.map(async (pageName) => {
-                if (this.cache.has(pageName)) return;
-
-                try {
-                    const pageModule = window[this.modules[pageName]];
-                    if (pageModule && typeof pageModule.init === 'function') {
-                        await pageModule.init();
-                        this.cache.set(pageName, pageModule);
+            let currentBatch = 0;
+            const batchSize = 2; // 每批加载2个页面
+            
+            const loadBatch = () => {
+                const batch = pagesToLoad.slice(currentBatch, currentBatch + batchSize);
+                if (batch.length === 0) return;
+                
+                Promise.allSettled(batch.map(async (pageName) => {
+                    if (this.cache.has(pageName)) return;
+                    try {
+                        const pageModule = window[this.modules[pageName]];
+                        if (pageModule?.init) {
+                            await pageModule.init();
+                            this.cache.set(pageName, pageModule);
+                        }
+                    } catch (error) {
+                        console.warn(`预加载页面 ${pageName} 失败:`, error);
                     }
-                } catch (error) {
-                    console.warn(`预加载页面 ${pageName} 失败:`, error);
-                }
-            }));
+                })).finally(() => {
+                    currentBatch += batchSize;
+                    if (currentBatch < pagesToLoad.length) {
+                        requestAnimationFrame(loadBatch);
+                    }
+                });
+            };
+            
+            loadBatch();
         }, { timeout: 2000 });
     }
 
@@ -320,18 +343,20 @@ class Router {
             // 获取旧页面容器
             const oldContainer = document.querySelector('.page-container');
 
-            // 执行页面过渡
-            await this.performPageTransition(newContainer, oldContainer);
+            // 将新容器立即添加到DOM，让浏览器开始渲染
+            UI.elements.mainContent.appendChild(newContainer);
 
-            // 执行页面渲染后的回调
+            // 在动画完成前执行页面渲染后的回调和激活方法
+            // 这使得页面逻辑可以与动画并行执行
             if (pageModule.afterRender) {
                 pageModule.afterRender();
             }
-
-            // 调用新页面的 onActivate 方法
             if (pageModule.onActivate) {
                 pageModule.onActivate();
             }
+
+            // 执行页面过渡动画，并等待动画完成以移除旧容器
+            await this.performPageTransition(newContainer, oldContainer, pageName);
 
             // 更新历史记录
             if (updateHistory) {
@@ -346,42 +371,75 @@ class Router {
         }
     }
 
+    // 获取页面顺序索引
+    static getPageIndex(pageName) {
+        const pageOrder = ['status', 'logs', 'settings', 'about'];
+        return pageOrder.indexOf(pageName);
+    }
+
     // 页面过渡效果
-    // 页面过渡效果
-    // 页面过渡效果
-    static async performPageTransition(newContainer, oldContainer) {
-        return new Promise(resolve => {
-            if (oldContainer) {
-                // 先添加新容器但设为透明
-                UI.elements.mainContent.appendChild(newContainer);
-                newContainer.style.opacity = '0';
-                newContainer.style.transform = 'scale(0.98)';
-    
-                // 添加淡出动画类
-                oldContainer.classList.add('fade-out');
-    
-                // 监听动画结束
-                const onAnimationEnd = () => {
-                    oldContainer.removeEventListener('animationend', onAnimationEnd);
-                    oldContainer.remove();
-    
-                    // 显示新容器
-                    newContainer.style.opacity = '1';
-                    newContainer.style.transform = 'scale(1)';
-                    newContainer.style.transition = 'opacity 250ms cubic-bezier(0.3, 0, 0.8, 0.15), transform 250ms cubic-bezier(0.3, 0, 0.8, 0.15)';
-    
-                    resolve();
-                };
-    
-                oldContainer.addEventListener('animationend', onAnimationEnd);
-    
-                // 添加超时保护 (150ms动画 + 30ms缓冲)
-                setTimeout(onAnimationEnd, 180);
-            } else {
-                // 没有旧容器，直接添加新容器
-                UI.elements.mainContent.appendChild(newContainer);
-                resolve();
-            }
+    // 此方法现在主要负责执行动画和清理旧容器
+    static async performPageTransition(newContainer, oldContainer, newPageName) {
+        // 如果没有旧容器，直接返回，无需动画
+        if (!oldContainer) {
+            // 确保新容器位置正确
+            newContainer.style.position = 'relative';
+            newContainer.style.transform = 'translateX(0)';
+            return;
+        }
+
+        // 确定动画方向：新页面索引大于当前页面索引时向右滑动
+        const currentPageIndex = this.getPageIndex(app.state.currentPage);
+        const newPageIndex = this.getPageIndex(newPageName);
+        const slideRight = newPageIndex > currentPageIndex;
+
+        // 优化性能：设置主内容区域样式，使用 transform 进行动画
+        const mainContent = UI.elements.mainContent;
+        mainContent.style.position = 'relative';
+        mainContent.style.overflow = 'hidden'; // 隐藏溢出部分
+
+        // 预先设置新容器的初始位置（已在 navigate 中添加到 DOM）
+        newContainer.style.cssText = `
+            position: absolute;
+            top: 0;
+            width: 100%;
+            transform: translateX(${slideRight ? '100%' : '-100%'});
+            will-change: transform; /* 提示浏览器优化 transform 动画 */
+            contain: content; /* 帮助浏览器隔离渲染 */
+            backface-visibility: hidden; /* 强制硬件加速 */
+        `;
+
+        // 使用 requestAnimationFrame 确保在下一帧应用样式并开始过渡
+        await new Promise(resolve => {
+            requestAnimationFrame(() => {
+                // 应用 CSS transition 属性
+                newContainer.style.transition = 'transform 300ms cubic-bezier(0.3, 0, 0.8, 0.15)';
+                oldContainer.style.transition = 'transform 300ms cubic-bezier(0.3, 0, 0.8, 0.15)';
+
+                // 在下一帧应用最终 transform，触发动画
+                requestAnimationFrame(() => {
+                    newContainer.style.transform = 'translateX(0)'; // 新容器滑入
+                    oldContainer.style.transform = `translateX(${slideRight ? '-100%' : '100%'})`; // 旧容器滑出
+                });
+
+                // 监听新容器的 transitionend 事件，动画完成后清理旧容器
+                newContainer.addEventListener('transitionend', () => {
+                    oldContainer.remove(); // 移除旧容器
+                    newContainer.style.position = 'relative'; // 动画完成后恢复相对定位
+                    newContainer.style.transition = ''; // 移除 transition 属性
+                    resolve(); // 动画完成，Promise解决
+                }, { once: true }); // 只监听一次事件
+
+                // 添加超时保护，防止 transitionend 事件未触发导致卡死
+                setTimeout(() => {
+                    if (oldContainer.parentNode) {
+                        oldContainer.remove();
+                        newContainer.style.position = 'relative';
+                        newContainer.style.transition = '';
+                        resolve();
+                    }
+                }, 350); // 超时时间略长于动画时长
+            });
         });
     }
 }
@@ -411,59 +469,6 @@ class UI {
         };
 
         this.elements.pageTitle.textContent = titles[pageName] || 'AMMF WebUI';
-    }
-
-    // 显示底栏覆盖层 - 添加动画效果
-    // 显示底栏覆盖层 - 添加动画效果
-    static showOverlay(overlayElement) {
-        if (!overlayElement) return;
-        
-        // 移除可能存在的closing类
-        overlayElement.classList.remove('closing');
-        
-        // 先设置为显示
-        overlayElement.style.display = 'flex';  // 改为flex以确保居中
-        
-        // 使用requestAnimationFrame确保DOM更新后再添加active类
-        requestAnimationFrame(() => {
-            overlayElement.classList.add('active');
-        });
-    }
-    
-    // 隐藏底栏覆盖层 - 添加动画效果
-    static hideOverlay(overlayElement) {
-        if (!overlayElement) return;
-        
-        // 添加closing类以触发淡出动画
-        overlayElement.classList.add('closing');
-        overlayElement.classList.remove('active');
-        
-        // 监听动画结束后隐藏元素
-        const handleAnimationEnd = () => {
-            overlayElement.removeEventListener('animationend', handleAnimationEnd);
-            overlayElement.style.display = 'none';
-            overlayElement.classList.remove('closing');
-        };
-        
-        overlayElement.addEventListener('animationend', handleAnimationEnd);
-        
-        // 添加超时保护，确保元素最终被隐藏
-        setTimeout(() => {
-            if (!overlayElement.classList.contains('active')) {
-                overlayElement.style.display = 'none';
-                overlayElement.classList.remove('closing');
-            }
-        }, 300);
-    }
-
-    static toggleOverlay(overlayElement) {
-        if (!overlayElement) return;
-
-        if (!overlayElement.classList.contains('active')) {
-            this.showOverlay(overlayElement);
-        } else {
-            this.hideOverlay(overlayElement);
-        }
     }
 
     // 显示错误信息
