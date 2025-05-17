@@ -337,7 +337,7 @@ const LogsPage = {
 
     // 优化的虚拟滚动相关配置
     virtualScroll: {
-        itemHeight: 24, // 减小每行高度，减少上方间隔
+        itemHeight: 32, // 减小每行高度，减少上方间隔
         bufferSize: 5,  // 缓冲区大小
         visibleItems: [],
         totalItems: [],

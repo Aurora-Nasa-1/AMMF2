@@ -22,14 +22,12 @@
 }
 
 .log-line {
-    position: absolute;
     width: 100%;
     padding: var(--spacing-xs) var(--spacing-m);
     box-sizing: border-box;
     border-left: 3px solid transparent;
-    line-height: 1.2;
+    line-height: 1.4;
     font-size: 14px;
-    will-change: transform;
 }
 .log-line.error { border-left-color: var(--error); }
 .log-line.warn { border-left-color: var(--secondary); }
