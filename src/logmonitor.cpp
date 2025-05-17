@@ -81,6 +81,10 @@ public:
         }
     }
 
+    bool is_running() const noexcept {
+        return running.load(std::memory_order_relaxed);
+    }
+
     void stop() {
         if (running.exchange(false)) {
             cv.notify_all();
@@ -397,7 +401,7 @@ int main(int argc, char* argv[]) {
         std::mutex mtx;
         std::condition_variable cv;
         std::unique_lock lock(mtx);
-        while (g_logger && g_logger->running) {
+        while (g_logger && g_logger->is_running()) {
             cv.wait_for(lock, std::chrono::hours(1));
         }
 
