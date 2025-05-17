@@ -140,7 +140,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--spacing-m);
+  gap: var(--spacing-xs);
   margin-left: auto;
   z-index: 1;
 }
