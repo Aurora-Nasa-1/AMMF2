@@ -574,7 +574,7 @@ int main(int argc, char* argv[]) {
     std::string log_dir = "/data/adb/modules/AMMF2/logs";
     int log_level_int = LOG_INFO;
     std::string command;
-    std::string log_name = "system";
+    std::string log_name = "main";
     std::string message;
     std::string batch_file;
     bool low_power = false;
