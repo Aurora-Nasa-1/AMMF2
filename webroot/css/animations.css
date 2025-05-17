@@ -98,11 +98,11 @@
   animation: spin 1s linear infinite;
 }
 
-/* Toast 动画效果 */
-@keyframes toastSlideIn {
+/* Toast 动画效果 (Portrait) */
+@keyframes toastSlideInPortrait {
   from {
     opacity: 0;
-    transform: translateY(16px) scale(0.98);
+    transform: translateY(4px) scale(0.9);
   }
 
   to {
@@ -111,7 +111,7 @@
   }
 }
 
-@keyframes toastSlideOut {
+@keyframes toastSlideOutPortrait {
   from {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -119,17 +119,65 @@
 
   to {
     opacity: 0;
-    transform: translateY(-16px) scale(0.98);
+    transform: translateY(-4px) scale(0.9);
+  }
+}
+
+/* Toast 动画效果 (Landscape) */
+@keyframes toastSlideInLandscape {
+  from {
+    opacity: 0;
+    transform: translateX(24px) scale(0.98); /* Slide in from right */
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOutLandscape {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(24px) scale(0.98); /* Slide out to right */
   }
 }
 
 /* Toast 动画应用 */
 .toast.show {
-  animation: toastSlideIn 250ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
+  animation: toastSlideInPortrait 250ms cubic-bezier(0.3, 0, 0.2, 0.15) forwards;
 }
 
 .toast.hide {
-  animation: toastSlideOut 150ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
+  animation: toastSlideOutPortrait 150ms cubic-bezier(0.3, 0, 0.8, 0.65) forwards;
+}
+
+/* Apply landscape animations in landscape orientation */
+@media (orientation: landscape) {
+    .toast.show {
+        animation: toastSlideInLandscape 250ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
+    }
+
+    .toast.hide {
+        animation: toastSlideOutLandscape 150ms cubic-bezier(0.3, 0, 0.8, 0.15) forwards;
+    }
+}
+
+
+/* 语言选择器动画 */
+@keyframes languageSelectorFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* 语言选择器动画 */

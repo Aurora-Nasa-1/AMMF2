@@ -18,29 +18,43 @@ const Core = {
             ksu.exec(command, "{}", callbackName);
         });
     },
-    // 显示Toast消息
+    /**
+     * 显示Toast消息
+     * @param {string} message - 要显示的消息文本
+     * @param {string} type - 消息类型 ('info', 'success', 'warning', 'error')
+     * @param {number} duration - 消息显示时长 (毫秒)
+     */
     showToast(message, type = 'info', duration = 3000) {
         const toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            console.error('Toast container not found!');
+            return;
+        }
+
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.textContent = message;
 
         toastContainer.appendChild(toast);
-
-        // 显示动画
         setTimeout(() => {
             toast.classList.add('show');
         }, 10);
-
-        // 自动关闭
         setTimeout(() => {
             toast.classList.remove('show');
+            toast.classList.add('hide');
+
             setTimeout(() => {
-                toastContainer.removeChild(toast);
-            }, 300);
+                if (toast.parentElement === toastContainer) {
+                    toastContainer.removeChild(toast);
+                }
+            }, 150);
         }, duration);
     },
-    // DOM 就绪检查
+
+    /**
+     * DOM 就绪检查
+     * @param {function} callback - DOM 就绪后执行的回调函数
+     */
     onDOMReady(callback) {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', callback);
@@ -50,5 +64,5 @@ const Core = {
     }
 };
 
-// 导出核心模块
+// 导出核心模块到全局作用域
 window.Core = Core;
