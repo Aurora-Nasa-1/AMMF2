@@ -18,7 +18,6 @@ const Core = {
             ksu.exec(command, "{}", callbackName);
         });
     },
-
     // 显示Toast消息
     showToast(message, type = 'info', duration = 3000) {
         const toastContainer = document.getElementById('toast-container');
@@ -41,7 +40,6 @@ const Core = {
             }, 300);
         }, duration);
     },
-
     // DOM 就绪检查
     onDOMReady(callback) {
         if (document.readyState === 'loading') {

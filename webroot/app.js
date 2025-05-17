@@ -424,7 +424,7 @@ class Router {
     static preloadPages() {
         const { priority, batchSize, timeout } = this.preloadConfig;
         const currentPage = app.state.currentPage;
-        
+
         // 按优先级排序要加载的页面
         const pagesToLoad = priority
             .filter(page => page !== currentPage)
@@ -434,15 +434,15 @@ class Router {
                 const indexB = priority.indexOf(b);
                 return indexA - indexB;
             });
-        
+
         const preloadBatch = async (startIndex) => {
             const batch = pagesToLoad.slice(startIndex, startIndex + batchSize);
             if (batch.length === 0) return;
-            
+
             await Promise.allSettled(
                 batch.map(page => this.preloadPage(page))
             );
-            
+
             if (startIndex + batchSize < pagesToLoad.length) {
                 requestIdleCallback(
                     () => preloadBatch(startIndex + batchSize),
@@ -450,7 +450,7 @@ class Router {
                 );
             }
         };
-        
+
         requestIdleCallback(() => preloadBatch(0), { timeout });
     }
 
@@ -665,7 +665,7 @@ class UI {
         });
 
         this.pageActions.set(pageName, validActions);
-        
+
         // 如果是当前页面，立即更新按钮
         if (app.state.currentPage === pageName) {
             this.updatePageActions(pageName);
@@ -894,11 +894,8 @@ class UI {
             nav.classList.remove('hidden');
             nav.classList.add('visible');
         }
-
-        // 移除滚动到底部的检测逻辑
     }
 }
-
 // 初始化应用
 const app = new App();
 
