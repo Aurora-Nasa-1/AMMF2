@@ -48,16 +48,16 @@
 .log-delete-dialog {
     padding: var(--spacing-xl);
     border-radius: var(--border-radius-l);
-    border: none;
-    max-width: 400px;
-    width: 90%;
     background-color: var(--surface-container);
     position: fixed;
-    top: 50vh;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    margin: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: center;
 }
 .log-delete-dialog::backdrop {
     background-color: oklch(0 0 0 / .4);
