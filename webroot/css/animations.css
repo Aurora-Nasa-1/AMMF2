@@ -3,6 +3,82 @@
  * 包含所有界面动画和过渡效果
  */
 /* 加载动画 */
+/* 页面过渡动画 */
+@keyframes pageFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.page-container.fade-out {
+  animation: pageFadeOut 200ms ease-out forwards;
+}
+
+.page-container.slide-in {
+  animation: pageSlideIn 300ms ease-out forwards;
+}
+/* 应用于标题和操作按钮容器 */
+.header-title.fade-out,
+.page-actions.fade-out {
+  animation: fadeOut 150ms ease-out forwards;
+}
+
+.header-title.fade-in,
+.page-actions.fade-in {
+  animation: fadeIn 200ms ease-out forwards;
+}
+/* 标题和操作按钮动画 */
+@keyframes headerFadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+        visibility: visible;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+        visibility: hidden;
+    }
+}
+
+@keyframes headerFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+        visibility: visible;
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        visibility: visible;
+    }
+}
+
+.header-title.fade-out,
+.page-actions.fade-out {
+    animation: headerFadeOut 200ms ease-out forwards;
+    will-change: transform, opacity, visibility;
+}
+
+.header-title.fade-in,
+.page-actions.fade-in {
+    animation: headerFadeIn 250ms ease-out forwards;
+    will-change: transform, opacity, visibility;
+}
 @keyframes spin {
   to {
     transform: rotate(360deg);
