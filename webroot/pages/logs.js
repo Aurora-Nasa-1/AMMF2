@@ -177,49 +177,10 @@ const LogsPage = {
                 Core.showToast(I18n.translate('LOG_FILE_NOT_FOUND', '日志文件不存在'), 'warning');
                 return;
             }
-
-            const dialog = document.createElement('dialog');
-            dialog.className = 'md-dialog log-delete-dialog';
-            document.body.style.overflow = 'hidden';
-
-            dialog.innerHTML = `
-                <h2>${I18n.translate('CLEAR_LOGS', '清除日志')}</h2>
-                <p>${I18n.translate('CONFIRM_CLEAR_LOG', '确定要清除此日志文件吗？此操作不可撤销。')}</p>
-                <div class="dialog-buttons">
-                    <button class="dialog-button" data-action="cancel">${I18n.translate('CANCEL', '取消')}</button>
-                    <button class="dialog-button filled" data-action="confirm">${I18n.translate('CONFIRM', '确认')}</button>
-                </div>
-            `;
-
-            document.body.appendChild(dialog);
-            requestAnimationFrame(() => dialog.showModal());
-
-            return new Promise((resolve, reject) => {
-                dialog.addEventListener('click', async (e) => {
-                    const action = e.target.getAttribute('data-action');
-                    if (action === 'cancel' || action === 'confirm') {
-                        dialog.classList.add('closing');
-                        setTimeout(() => {
-                            dialog.close();
-                            document.body.removeChild(dialog);
-                            document.body.style.overflow = '';
-                        }, 120);
-
-                        if (action === 'confirm') {
-                            try {
-                                await Core.execCommand(`cat /dev/null > "${logPath}" && chmod 666 "${logPath}"`);
-                                await this.loadLogContent();
-                                Core.showToast(I18n.translate('LOG_CLEARED', '日志已清除'));
-                                resolve(true);
-                            } catch (error) {
-                                console.error(I18n.translate('LOG_CLEAR_ERROR', '清除日志失败:'), error);
-                                Core.showToast(I18n.translate('LOG_CLEAR_ERROR', '清除日志失败'), 'error');
-                                reject(error);
-                            }
-                        }
-                    }
-                });
-            });
+            await Core.execCommand(`cat /dev/null > "${logPath}" && chmod 666 "${logPath}"`);
+            await this.loadLogContent();
+            Core.showToast(I18n.translate('LOG_CLEARED', '日志已清除'));
+            return true;
         } catch (error) {
             console.error(I18n.translate('LOG_CLEAR_ERROR', '清除日志失败:'), error);
             Core.showToast(I18n.translate('LOG_CLEAR_ERROR', '清除日志失败'), 'error');
@@ -259,13 +220,14 @@ const LogsPage = {
     },
 
     virtualScroll: {
-        itemHeight: 32,
+        defaultHeight: 32, // Fallback height for initial rendering
         bufferSize: 10,
-        totalItems: [],
+        totalItems: [], // Array of { id, content, logClass, height, offset }
         scrollTop: 0,
         lastScrollTime: 0,
         scrollThrottle: 50,
-        isProcessing: false
+        isProcessing: false,
+        heightCache: new Map() // Cache computed heights
     },
 
     handleScroll(event) {
@@ -288,15 +250,28 @@ const LogsPage = {
         const container = document.getElementById('logs-display-container');
         if (!container) return;
 
-        const { itemHeight, bufferSize, totalItems, scrollTop } = this.virtualScroll;
+        const { bufferSize, totalItems, scrollTop } = this.virtualScroll;
         const containerHeight = container.clientHeight;
-        const visibleCount = Math.ceil(containerHeight / itemHeight);
-        const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - bufferSize);
-        const endIndex = Math.min(totalItems.length, startIndex + visibleCount + 2 * bufferSize);
+
+        // Find start index by binary search on offsets
+        let startIndex = this.binarySearchOffset(scrollTop);
+        let endOffset = scrollTop + containerHeight;
+        let endIndex = startIndex;
+
+        // Find end index
+        while (endIndex < totalItems.length && totalItems[endIndex].offset < endOffset) {
+            endIndex++;
+        }
+
+        // Apply buffer
+        startIndex = Math.max(0, startIndex - bufferSize);
+        endIndex = Math.min(totalItems.length, endIndex + bufferSize);
+
+        const totalHeight = totalItems.length > 0 ? totalItems[totalItems.length - 1].offset + totalItems[totalItems.length - 1].height : 0;
 
         const fragment = document.createDocumentFragment();
         const wrapper = document.createElement('div');
-        wrapper.style.height = `${totalItems.length * itemHeight}px`;
+        wrapper.style.height = `${totalHeight}px`;
         wrapper.style.position = 'relative';
 
         totalItems.slice(startIndex, endIndex).forEach((item, idx) => {
@@ -304,8 +279,10 @@ const LogsPage = {
             div.className = `log-line ${item.logClass || ''}`;
             div.innerHTML = item.content;
             div.style.position = 'absolute';
-            div.style.top = `${(startIndex + idx) * itemHeight}px`;
+            div.style.top = `${item.offset}px`;
+            div.style.width = '100%';
             div.style.willChange = 'transform';
+            div.dataset.index = startIndex + idx; // For height updates
             wrapper.appendChild(div);
         });
 
@@ -314,6 +291,53 @@ const LogsPage = {
         if (logsDisplay) {
             logsDisplay.innerHTML = '';
             logsDisplay.appendChild(fragment);
+            // Update heights after rendering
+            this.updateRenderedHeights(startIndex, endIndex);
+        }
+    },
+
+    binarySearchOffset(scrollTop) {
+        const { totalItems } = this.virtualScroll;
+        let low = 0, high = totalItems.length - 1;
+        while (low <= high) {
+            const mid = Math.floor((low + high) / 2);
+            const offset = totalItems[mid].offset;
+            if (offset <= scrollTop && (mid === totalItems.length - 1 || totalItems[mid + 1].offset > scrollTop)) {
+                return mid;
+            } else if (offset > scrollTop) {
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return 0;
+    },
+
+    updateRenderedHeights(startIndex, endIndex) {
+        const { totalItems, heightCache } = this.virtualScroll;
+        const logsDisplay = document.getElementById('logs-display');
+        if (!logsDisplay) return;
+
+        const renderedItems = logsDisplay.querySelectorAll('.log-line');
+        let offset = startIndex > 0 ? totalItems[startIndex - 1].offset + totalItems[startIndex - 1].height : 0;
+
+        renderedItems.forEach((item, idx) => {
+            const index = startIndex + idx;
+            const rect = item.getBoundingClientRect();
+            const height = rect.height;
+            if (height > 0) {
+                heightCache.set(totalItems[index].id, height);
+                totalItems[index].height = height;
+            }
+            totalItems[index].offset = offset;
+            item.style.top = `${offset}px`;
+            offset += totalItems[index].height;
+        });
+
+        // Update offsets for remaining items
+        for (let i = endIndex; i < totalItems.length; i++) {
+            totalItems[i].offset = offset;
+            offset += totalItems[i].height;
         }
     },
 
@@ -325,13 +349,31 @@ const LogsPage = {
         const lines = this.logContent.split('\n').filter(line => line.trim());
         this.virtualScroll.totalItems = lines.map((line, index) => this.processLogLine(line, index));
 
-        const containerHeight = document.getElementById('logs-display-container')?.clientHeight || 500;
-        const visibleCount = Math.ceil(containerHeight / this.virtualScroll.itemHeight);
-        const endIndex = Math.min(this.virtualScroll.totalItems.length, visibleCount + 2 * this.virtualScroll.bufferSize);
+        // Initialize offsets
+        let offset = 0;
+        this.virtualScroll.totalItems.forEach(item => {
+            item.offset = offset;
+            offset += item.height;
+        });
+
+        const container = document.getElementById('logs-display-container');
+        const containerHeight = container ? container.clientHeight : 500;
+        let endIndex = 0;
+        let endOffset = containerHeight;
+
+        // Find initial visible items
+        while (endIndex < this.virtualScroll.totalItems.length && this.virtualScroll.totalItems[endIndex].offset < endOffset) {
+            endIndex++;
+        }
+        endIndex = Math.min(this.virtualScroll.totalItems.length, endIndex + 2 * this.virtualScroll.bufferSize);
+
+        const totalHeight = this.virtualScroll.totalItems.length > 0
+            ? this.virtualScroll.totalItems[this.virtualScroll.totalItems.length - 1].offset + this.virtualScroll.totalItems[this.virtualScroll.totalItems.length - 1].height
+            : 0;
 
         const fragment = document.createDocumentFragment();
         const wrapper = document.createElement('div');
-        wrapper.style.height = `${this.virtualScroll.totalItems.length * this.virtualScroll.itemHeight}px`;
+        wrapper.style.height = `${totalHeight}px`;
         wrapper.style.position = 'relative';
 
         this.virtualScroll.totalItems.slice(0, endIndex).forEach((item, index) => {
@@ -339,8 +381,10 @@ const LogsPage = {
             div.className = `log-line ${item.logClass || ''}`;
             div.innerHTML = item.content;
             div.style.position = 'absolute';
-            div.style.top = `${index * this.virtualScroll.itemHeight}px`;
+            div.style.top = `${item.offset}px`;
+            div.style.width = '100%';
             div.style.willChange = 'transform';
+            div.dataset.index = index;
             wrapper.appendChild(div);
         });
 
@@ -349,7 +393,7 @@ const LogsPage = {
     },
 
     processLogLine(line, id) {
-        if (!line.trim()) return { id, content: '', logClass: '' };
+        if (!line.trim()) return { id, content: '', logClass: '', height: this.virtualScroll.defaultHeight, offset: 0 };
 
         let formatted = this.escapeHtml(line);
         let logClass = '';
@@ -367,7 +411,14 @@ const LogsPage = {
             formatted = formatted.replace(timeMatch[0], relativeTime).trim();
         }
 
-        return { id, content: formatted, logClass };
+        const cachedHeight = this.virtualScroll.heightCache.get(id);
+        return {
+            id,
+            content: formatted,
+            logClass,
+            height: cachedHeight || this.virtualScroll.defaultHeight,
+            offset: 0
+        };
     },
 
     getRelativeTimeString(date) {
@@ -415,10 +466,8 @@ const LogsPage = {
                         </select>
                     </label>
                 </div>
-                <div id="logs-display-container" class="card-content">
-                    <div class="logs-scroll-container">
-                        <div id="logs-display" class="logs-content">${this.formatLogContent()}</div>
-                    </div>
+                <div id="logs-display-container" class="card-content logs-scroll-container">
+                    <div id="logs-display" class="logs-content">${this.formatLogContent()}</div>
                 </div>
             </div>
         `;
@@ -442,6 +491,8 @@ const LogsPage = {
         const container = document.getElementById('logs-display-container');
         if (container) {
             container.addEventListener('scroll', this.handleScroll.bind(this));
+            // Initial height update
+            this.updateRenderedHeights(0, this.virtualScroll.totalItems.length);
         }
 
         this.onLanguageChanged();
@@ -468,6 +519,7 @@ const LogsPage = {
             container.removeEventListener('scroll', this.handleScroll.bind(this));
             container.querySelectorAll('*').forEach(element => element.replaceWith(element.cloneNode(true)));
         }
+        this.virtualScroll.heightCache.clear();
     }
 };
 window.LogsPage = LogsPage;

@@ -10,7 +10,9 @@
     flex-direction: column;
     position: relative;
 }
-
+.controls-row {
+    padding: 10px;
+}
 .logs-scroll-container {
     overflow-y: auto;
     height: 100%;
@@ -22,6 +24,8 @@
 }
 
 .log-line {
+    white-space: nowrap;
+    text-overflow: ellipsis;
     width: 100%;
     padding: var(--spacing-xs) var(--spacing-m);
     box-sizing: border-box;
@@ -43,34 +47,4 @@
 .logs-content.loading {
     opacity: 0.6;
     pointer-events: none;
-}
-/* 日志对话框样式 */
-.log-delete-dialog {
-    padding: var(--spacing-xl);
-    border-radius: var(--border-radius-l);
-    background-color: var(--surface-container);
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    display: none;
-    justify-content: center;
-    align-items: center;
-}
-.log-delete-dialog::backdrop {
-    background-color: oklch(0 0 0 / .4);
-}
-
-.log-delete-dialog h2 {
-    margin: 0 0 var(--spacing-l) 0;
-    font: var(--headline-s);
-    color: var(--on-surface);
-}
-
-.log-delete-dialog p {
-    margin: 0 0 var(--spacing-xl) 0;
-    color: var(--on-surface-variant);
-    font: var(--body-m);
 }
