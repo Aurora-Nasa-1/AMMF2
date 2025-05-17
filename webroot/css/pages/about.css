@@ -181,7 +181,7 @@
 }
 
 .color-picker-dialog {
-    background-color: var(--surface-container-high);
+    background-color: var(--surface-container);
     border-radius: var(--border-radius-l);
     width: min(90%, 400px);
     overflow: hidden;
