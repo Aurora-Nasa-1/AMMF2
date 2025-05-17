@@ -11,7 +11,7 @@
 #include <atomic>
 #include <memory>
 #include <csignal>
-#include <format>
+#include <ctime>
 
 // Linux-specific headers
 #include <sys/stat.h>
@@ -39,10 +39,11 @@ private:
     std::atomic<size_t> buffer_max_size{8192};
     std::atomic<size_t> log_size_limit{102400};
     std::atomic<LogLevel> log_level{LogLevel::INFO};
-
     std::string log_dir;
     std::mutex log_mutex;
     std::condition_variable cv;
+    std::string time_buffer;
+    std::mutex time_mutex;
 
     struct LogFile {
         std::ofstream stream;
@@ -59,15 +60,17 @@ private:
     std::map<std::string, std::unique_ptr<LogBuffer>> log_buffers;
 
     std::unique_ptr<std::thread> flush_thread;
-    std::string time_buffer;
-    std::mutex time_mutex;
 
 public:
     Logger(StringView dir, LogLevel level = LogLevel::INFO, size_t size_limit = 102400)
-        : log_dir(dir), log_level(level), log_size_limit(size_limit) {
+        : running(true)
+        , low_power_mode(false)
+        , buffer_max_size(8192)
+        , log_size_limit(size_limit)
+        , log_level(level)
+        , log_dir(dir) {
         create_log_directory();
-        time_buffer.reserve(32);
-        update_time_cache();
+        time_buffer.resize(32);
         flush_thread = std::make_unique<std::thread>(&Logger::flush_thread_func, this);
     }
 
@@ -88,9 +91,8 @@ public:
     }
 
     void set_buffer_size(size_t size) { buffer_max_size = size; }
-    Systray("buffer_max_size", size);
-    void set_log_level(LogLevel level) { log_level = level;  }
-    void set_log_size_limit(size_t limit) { log_size_limit = limit; }
+    void set_log_level(LogLevel level) { log_level = level; }
+    void set_log_size_limit(size_t size) { log_size_limit = size; }
     void set_low_power_mode(bool enabled) {
         low_power_mode = enabled;
         buffer_max_size = enabled ? 32768 : 8192;
@@ -100,9 +102,16 @@ public:
     void write_log(StringView log_name, LogLevel level, StringView message) {
         if (level > log_level || !running) return;
 
-        const auto time_str = get_formatted_time();
+        const char* time_str = get_formatted_time();
         const char* level_str = get_level_string(level);
-        std::string log_entry = std::format("{} [{}] {}\n", time_str, level_str, message);
+        std::string log_entry;
+        log_entry.reserve(100 + message.size());
+        log_entry = time_str;
+        log_entry += " [";
+        log_entry += level_str;
+        log_entry += "] ";
+        log_entry += message;
+        log_entry += "\n";
         add_to_buffer(std::string(log_name), std::move(log_entry), level);
     }
 
@@ -112,11 +121,17 @@ public:
         std::string batch_content;
         batch_content.reserve(entries.size() * 100);
         bool has_error = false;
-        const auto time_str = get_formatted_time();
+        const char* time_str = get_formatted_time();
 
         for (const auto& [level, msg] : entries) {
             if (level <= log_level) {
-                batch_content += std::format("{} [{}] {}\n", time_str, get_level_string(level), msg);
+                const char* level_str = get_level_string(level);
+                batch_content += time_str;
+                batch_content += " [";
+                batch_content += level_str;
+                batch_content += "] ";
+                batch_content += msg;
+                batch_content += "\n";
                 if (level == LogLevel::ERROR) has_error = true;
             }
         }
@@ -202,14 +217,14 @@ private:
         auto now_time = std::chrono::system_clock::to_time_t(now);
         std::tm tm;
         localtime_r(&now_time, &tm);
-        time_buffer.clear();
-        time_buffer = std::format("{:%Y-%m-%d %H:%M:%S}", tm);
+        strftime(time_buffer.data(), time_buffer.size(), "%Y-%m-%d %H:%M:%S", &tm);
         return time_buffer.c_str();
     }
 
     void add_to_buffer(std::string log_name, std::string&& content, LogLevel level) {
         std::lock_guard lock(log_mutex);
-        auto& buffer = log_buffers.try_emplace(log_name, std::make_unique<LogBuffer>())->second;
+        auto [it, inserted] = log_buffers.try_emplace(log_name, std::make_unique<LogBuffer>());
+        auto& buffer = it->second;
         buffer->content += std::move(content);
         buffer->last_write = Clock::now();
 
@@ -227,7 +242,8 @@ private:
 
         auto& buffer = it->second;
         std::string path = log_dir + "/" + log_name + ".log";
-        auto& file = log_files.try_emplace(log_name, std::make_unique<LogFile>())->second;
+        auto [file_it, inserted] = log_files.try_emplace(log_name, std::make_unique<LogFile>());
+        auto& file = file_it->second;
 
         if (file->stream.is_open() && file->current_size > log_size_limit) {
             file->stream.close();
@@ -249,7 +265,7 @@ private:
                 return;
             }
             file->stream.seekp(0, std::ios::end);
-            file->current_size = file->stream.tellp();
+            file->current_size = static_cast<size_t>(file->stream.tellp());
         }
 
         file->stream.write(buffer->content.data(), buffer->content.size());
@@ -266,7 +282,8 @@ private:
     void flush_thread_func() {
         while (running) {
             std::unique_lock lock(log_mutex);
-            cv.wait_for(lock, low_power_mode ? 60s : 15s, [this] { return !running; });
+            cv.wait_for(lock, low_power_mode ? std::chrono::seconds(60) : std::chrono::seconds(15), 
+                        [this] { return !running; });
 
             if (!running) break;
 
@@ -342,15 +359,15 @@ int main(int argc, char* argv[]) {
         else if (arg == "-p") low_power = true;
         else if (arg == "-h" || arg == "--help") {
             std::cout << "Usage: " << argv[0] << " [options]\n"
-                       << "Options:\n"
-                       << "  -d DIR    Log directory (default: /data/adb/modules/AMMF2/logs)\n"
-                       << "  -l LEVEL  Log level (1=Error, 2=Warn, 3=Info, 4=Debug, default: 3)\n"
-                       << "  -c CMD    Command (daemon, write, batch, flush, clean)\n"
-                       << "  -n NAME   Log name (default: main)\n"
-                       << "  -m MSG    Log message\n"
-                       << "  -b FILE   Batch input file (format: level|message)\n"
-                       << "  -p        Low power mode\n"
-                       << "  -h        Show help\n";
+                      << "Options:\n"
+                      << "  -d DIR    Log directory (default: /data/adb/modules/AMMF2/logs)\n"
+                      << "  -l LEVEL  Log level (1=Error, 2=Warn, 3=Info, 4=Debug, default: 3)\n"
+                      << "  -c CMD    Command (daemon, write, batch, flush, clean)\n"
+                      << "  -n NAME   Log name (default: main)\n"
+                      << "  -m MSG    Log message\n"
+                      << "  -b FILE   Batch input file (format: level|message)\n"
+                      << "  -p        Low power mode\n"
+                      << "  -h        Show help\n";
             return 0;
         } else {
             std::cerr << "Unknown argument: " << arg << "\n";
@@ -375,27 +392,25 @@ int main(int argc, char* argv[]) {
         signal(SIGPIPE, SIG_IGN);
 
         g_logger->write_log("system", LogLevel::INFO, 
-            low_power ? "Daemon started (low power)" : "Daemon started");
+                            low_power ? "Daemon started (low power)" : "Daemon started");
 
         std::mutex mtx;
         std::condition_variable cv;
         std::unique_lock lock(mtx);
-        while (g_logger->running) {
+        while (g_logger && g_logger->running) {
             cv.wait_for(lock, std::chrono::hours(1));
         }
 
         g_logger->write_log("system", LogLevel::INFO, "Daemon stopping");
         return 0;
-    }
-    else if (command == "write") {
+    } else if (command == "write") {
         if (message.empty()) {
             std::cerr << "Message required for write command\n";
             return 1;
         }
         g_logger->write_log(log_name, log_level, message);
         g_logger->flush_buffer(log_name);
-    }
-    else if (command == "batch") {
+    } else if (command == "batch") {
         if (batch_file.empty()) {
             std::cerr << "Batch file required for batch command\n";
             return 1;
@@ -452,14 +467,11 @@ int main(int argc, char* argv[]) {
             g_logger->batch_write(log_name, entries);
             g_logger->flush_buffer(log_name);
         }
-    }
-    else if (command == "flush") {
+    } else if (command == "flush") {
         g_logger->flush_all();
-    }
-    else if (command == "clean") {
+    } else if (command == "clean") {
         g_logger->clean_logs();
-    }
-    else {
+    } else {
         std::cerr << "Unknown command: " << command << "\n";
         return 1;
     }
