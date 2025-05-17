@@ -71,7 +71,7 @@ lang_en() {
     SERVICE_LOG_ROTATED="Log rotated"
     
     # main.sh 相关
-    SCRIPT_INIT_COMPLETE="Script execution started - initialization complete"
+    SCRIPT_INIT_COMPLETE="Script initialization complete"
     LOGGER_NOT_LOADED="Warning: Logger system not loaded"
     FILE_NOT_FOUND="File not found"
     WARN_MISSING_PARAMETERS="Missing parameters"
@@ -150,7 +150,7 @@ lang_zh() {
     SERVICE_LOG_ROTATED="日志已轮换"
     
     # main.sh 相关
-    SCRIPT_INIT_COMPLETE="开始执行脚本 - 初始化完成"
+    SCRIPT_INIT_COMPLETE="脚本初始化完成"
     LOGGER_NOT_LOADED="警告: 日志系统未加载"
     FILE_NOT_FOUND="文件未找到"
     WARN_MISSING_PARAMETERS="缺少参数"
