@@ -13,17 +13,6 @@ const LogsPage = {
     // 日志内容
     logContent: '',
 
-    // 虚拟滚动配置
-    virtualScroll: {
-        itemHeight: 32, // 每行日志高度
-        bufferSize: 10, // 上下缓冲区大小
-        scrollTop: 0, // 当前滚动位置
-        processedLines: [], // 缓存的处理过的日志行
-        lastUpdateTime: 0, // 上次更新时间
-        updateThrottle: 16, // 节流时间（约60fps）
-        isProcessing: false // 是否正在处理
-    },
-
     async preloadData() {
         try {
             const tasks = [
@@ -55,18 +44,15 @@ const LogsPage = {
                     this.logContent = I18n.translate('LOGS_DIR_NOT_FOUND', '日志目录不存在');
                     return false;
                 }
-
                 this.logFiles = preloadedData.logFiles;
             } else {
                 const logsDir = `${Core.MODULE_PATH}logs/`;
                 const dirExists = await this.checkLogsDirectoryExists(logsDir);
-
                 if (!dirExists) {
                     console.warn(I18n.translate('LOGS_DIR_NOT_FOUND', '日志目录不存在'));
                     this.logContent = I18n.translate('LOGS_DIR_NOT_FOUND', '日志目录不存在');
                     return false;
                 }
-
                 await this.scanLogFiles();
             }
 
@@ -86,24 +72,9 @@ const LogsPage = {
 
     registerActions() {
         UI.registerPageActions('logs', [
-            {
-                id: 'refresh-logs',
-                icon: 'refresh',
-                title: I18n.translate('REFRESH_LOGS', '刷新日志'),
-                onClick: 'loadLogContent'
-            },
-            {
-                id: 'export-logs',
-                icon: 'download',
-                title: I18n.translate('EXPORT_LOGS', '导出日志'),
-                onClick: 'exportLog',
-            },
-            {
-                id: 'clear-logs',
-                icon: 'delete',
-                title: I18n.translate('CLEAR_LOGS', '清除日志'),
-                onClick: 'clearLog',
-            }
+            { id: 'refresh-logs', icon: 'refresh', title: I18n.translate('REFRESH_LOGS', '刷新日志'), onClick: 'loadLogContent' },
+            { id: 'export-logs', icon: 'download', title: I18n.translate('EXPORT_LOGS', '导出日志'), onClick: 'exportLog' },
+            { id: 'clear-logs', icon: 'delete', title: I18n.translate('CLEAR_LOGS', '清除日志'), onClick: 'clearLog' }
         ]);
     },
 
@@ -120,7 +91,6 @@ const LogsPage = {
     async scanLogFiles() {
         try {
             const logsDir = `${Core.MODULE_PATH}logs/`;
-
             const dirExists = await this.checkLogsDirectoryExists(logsDir);
             if (!dirExists) {
                 console.warn(I18n.translate('LOGS_DIR_NOT_FOUND', '日志目录不存在'));
@@ -129,7 +99,6 @@ const LogsPage = {
             }
 
             const result = await Core.execCommand(`find "${logsDir}" -type f -name "*.log" -o -name "*.log.old" 2>/dev/null | sort`);
-
             this.logFiles = {};
 
             if (!result || result.trim() === '') {
@@ -138,7 +107,6 @@ const LogsPage = {
             }
 
             const files = result.split('\n').filter(file => file.trim() !== '');
-
             files.forEach(file => {
                 const fileName = file.split('/').pop();
                 this.logFiles[fileName] = file;
@@ -159,7 +127,6 @@ const LogsPage = {
             }
 
             const logPath = this.logFiles[this.currentLogFile];
-
             const fileExistsResult = await Core.execCommand(`[ -f "${logPath}" ] && echo "true" || echo "false"`);
             if (fileExistsResult.trim() !== "true") {
                 this.logContent = I18n.translate('LOG_FILE_NOT_FOUND', '日志文件不存在');
@@ -168,45 +135,31 @@ const LogsPage = {
             }
 
             const logsDisplay = document.getElementById('logs-display');
-            if (logsDisplay) {
-                logsDisplay.classList.add('loading');
-            }
+            if (logsDisplay) logsDisplay.classList.add('loading');
 
             const fileSizeCmd = await Core.execCommand(`wc -c "${logPath}" | awk '{print $1}'`);
             const fileSize = parseInt(fileSizeCmd.trim(), 10);
-
-            let content;
-            if (fileSize > 1024 * 1024) {
-                content = await Core.execCommand(`tail -c 102400 "${logPath}"`);
-            } else {
-                content = await Core.execCommand(`cat "${logPath}"`);
-            }
+            const content = fileSize > 1024 * 1024
+                ? await Core.execCommand(`tail -c 102400 "${logPath}"`)
+                : await Core.execCommand(`cat "${logPath}"`);
 
             this.processLogContent(content, logsDisplay, showToast);
         } catch (error) {
             console.error(I18n.translate('LOGS_LOAD_ERROR', '加载日志内容失败:'), error);
             this.logContent = I18n.translate('LOGS_LOAD_ERROR', '加载失败');
-
-            const logsDisplay = document.getElementById('logs-display');
-            if (logsDisplay) {
-                logsDisplay.classList.remove('loading');
-            }
-
+            if (logsDisplay) logsDisplay.classList.remove('loading');
             if (showToast) Core.showToast(this.logContent, 'error');
         }
     },
 
     processLogContent(content, logsDisplay, showToast) {
         this.logContent = content || I18n.translate('NO_LOGS', '没有可用的日志');
-        this.virtualScroll.processedLines = this.processLogLines(this.logContent.split('\n').filter(line => line.trim()));
-
         Promise.resolve().then(() => {
             if (logsDisplay) {
                 logsDisplay.innerHTML = this.formatLogContent();
                 logsDisplay.classList.remove('loading');
                 logsDisplay.scrollTop = logsDisplay.scrollHeight;
             }
-
             if (showToast) Core.showToast(I18n.translate('LOGS_REFRESHED', '日志已刷新'));
         });
     },
@@ -219,16 +172,14 @@ const LogsPage = {
             }
 
             const logPath = this.logFiles[this.currentLogFile];
-
             const fileExistsResult = await Core.execCommand(`[ -f "${logPath}" ] && echo "true" || echo "false"`);
             if (fileExistsResult.trim() !== "true") {
-                Core.showToast(I18n.translate('LOG_FILE зданиеNOT_FOUND', '日志文件不存在'), 'warning');
+                Core.showToast(I18n.translate('LOG_FILE_NOT_FOUND', '日志文件不存在'), 'warning');
                 return;
             }
 
             const dialog = document.createElement('dialog');
             dialog.className = 'md-dialog log-delete-dialog';
-
             document.body.style.overflow = 'hidden';
 
             dialog.innerHTML = `
@@ -241,10 +192,7 @@ const LogsPage = {
             `;
 
             document.body.appendChild(dialog);
-
-            requestAnimationFrame(() => {
-                dialog.showModal();
-            });
+            requestAnimationFrame(() => dialog.showModal());
 
             return new Promise((resolve, reject) => {
                 dialog.addEventListener('click', async (e) => {
@@ -303,59 +251,65 @@ const LogsPage = {
     escapeHtml(text) {
         if (!text) return '';
         return text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    },
+
+    virtualScroll: {
+        itemHeight: 32,
+        bufferSize: 10,
+        totalItems: [],
+        scrollTop: 0,
+        lastScrollTime: 0,
+        scrollThrottle: 50,
+        isProcessing: false
     },
 
     handleScroll(event) {
         if (this.virtualScroll.isProcessing) return;
 
         const now = Date.now();
-        if (now - this.virtualScroll.lastUpdateTime < this.virtualScroll.updateThrottle) return;
+        if (now - this.virtualScroll.lastScrollTime < this.virtualScroll.scrollThrottle) return;
 
         this.virtualScroll.scrollTop = event.target.scrollTop;
-        this.virtualScroll.lastUpdateTime = now;
+        this.virtualScroll.lastScrollTime = now;
         this.virtualScroll.isProcessing = true;
 
         requestAnimationFrame(() => {
-            this.updateVisibleLogs();
+            this.updateVisibleItems();
             this.virtualScroll.isProcessing = false;
         });
     },
 
-    updateVisibleLogs() {
+    updateVisibleItems() {
         const container = document.getElementById('logs-display-container');
         if (!container) return;
 
-        const { itemHeight, bufferSize, processedLines, scrollTop } = this.virtualScroll;
+        const { itemHeight, bufferSize, totalItems, scrollTop } = this.virtualScroll;
         const containerHeight = container.clientHeight;
-        const totalLines = processedLines.length;
-
         const visibleCount = Math.ceil(containerHeight / itemHeight);
         const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - bufferSize);
-        const endIndex = Math.min(totalLines, startIndex + visibleCount + bufferSize);
+        const endIndex = Math.min(totalItems.length, startIndex + visibleCount + 2 * bufferSize);
 
         const fragment = document.createDocumentFragment();
         const wrapper = document.createElement('div');
-        wrapper.className = 'virtual-scroll-wrapper';
-        wrapper.style.height = `${totalLines * itemHeight}px`;
+        wrapper.style.height = `${totalItems.length * itemHeight}px`;
+        wrapper.style.position = 'relative';
 
-        for (let i = startIndex; i < endIndex; i++) {
-            const item = processedLines[i];
+        totalItems.slice(startIndex, endIndex).forEach((item, idx) => {
             const div = document.createElement('div');
             div.className = `log-line ${item.logClass || ''}`;
-            div.style.position = 'absolute';
-            div.style.top = `${i * itemHeight}px`;
-            div.style.width = '100%';
             div.innerHTML = item.content;
+            div.style.position = 'absolute';
+            div.style.top = `${(startIndex + idx) * itemHeight}px`;
+            div.style.willChange = 'transform';
             wrapper.appendChild(div);
-        }
+        });
 
         fragment.appendChild(wrapper);
-
         const logsDisplay = document.getElementById('logs-display');
         if (logsDisplay) {
             logsDisplay.innerHTML = '';
@@ -368,38 +322,30 @@ const LogsPage = {
             return `<div class="empty-state">${I18n.translate('NO_LOGS', '没有可用的日志')}</div>`;
         }
 
-        const { processedLines, itemHeight } = this.virtualScroll;
-        if (processedLines.length === 0) {
-            return `<div class="empty-state">${I18n.translate('NO_LOGS', '没有可用的日志')}</div>`;
-        }
+        const lines = this.logContent.split('\n').filter(line => line.trim());
+        this.virtualScroll.totalItems = lines.map((line, index) => this.processLogLine(line, index));
 
-        const container = document.getElementById('logs-display-container');
-        const containerHeight = container?.clientHeight || 500;
-        const visibleCount = Math.ceil(containerHeight / itemHeight);
-        const endIndex = Math.min(processedLines.length, visibleCount + this.virtualScroll.bufferSize);
+        const containerHeight = document.getElementById('logs-display-container')?.clientHeight || 500;
+        const visibleCount = Math.ceil(containerHeight / this.virtualScroll.itemHeight);
+        const endIndex = Math.min(this.virtualScroll.totalItems.length, visibleCount + 2 * this.virtualScroll.bufferSize);
 
         const fragment = document.createDocumentFragment();
-        const wrapper = joinDocument.createElement('div');
-        wrapper.className = 'virtual-scroll-wrapper';
-        wrapper.style.height = `${processedLines.length * itemHeight}px`;
+        const wrapper = document.createElement('div');
+        wrapper.style.height = `${this.virtualScroll.totalItems.length * this.virtualScroll.itemHeight}px`;
+        wrapper.style.position = 'relative';
 
-        for (let i = 0; i < endIndex; i++) {
-            const item = processedLines[i];
+        this.virtualScroll.totalItems.slice(0, endIndex).forEach((item, index) => {
             const div = document.createElement('div');
             div.className = `log-line ${item.logClass || ''}`;
-            div.style.position = 'absolute';
-            div.style.top = `${i * itemHeight}px`;
-            div.style.width = '100%';
             div.innerHTML = item.content;
+            div.style.position = 'absolute';
+            div.style.top = `${index * this.virtualScroll.itemHeight}px`;
+            div.style.willChange = 'transform';
             wrapper.appendChild(div);
-        }
+        });
 
         fragment.appendChild(wrapper);
         return fragment.firstChild.outerHTML;
-    },
-
-    processLogLines(lines) {
-        return lines.map((line, index) => this.processLogLine(line, index));
     },
 
     processLogLine(line, id) {
@@ -421,11 +367,7 @@ const LogsPage = {
             formatted = formatted.replace(timeMatch[0], relativeTime).trim();
         }
 
-        return {
-            id,
-            content: formatted,
-            logClass
-        };
+        return { id, content: formatted, logClass };
     },
 
     getRelativeTimeString(date) {
@@ -463,7 +405,6 @@ const LogsPage = {
 
     render() {
         const hasLogFiles = Object.keys(this.logFiles).length > 0;
-
         return `
             <div class="logs-container">
                 <div class="controls-row">
@@ -474,7 +415,6 @@ const LogsPage = {
                         </select>
                     </label>
                 </div>
-                
                 <div id="logs-display-container" class="card-content">
                     <div class="logs-scroll-container">
                         <div id="logs-display" class="logs-content">${this.formatLogContent()}</div>
@@ -488,7 +428,6 @@ const LogsPage = {
         if (Object.keys(this.logFiles).length === 0) {
             return `<option value="" disabled>${I18n.translate('NO_LOGS_FILES', '没有可用的日志文件')}</option>`;
         }
-
         return Object.keys(this.logFiles).map(fileName =>
             `<option value="${fileName}" ${this.currentLogFile === fileName ? 'selected' : ''}>${fileName}</option>`
         ).join('');
@@ -510,11 +449,8 @@ const LogsPage = {
 
     onLanguageChanged() {
         this.registerActions();
-
         const selectLabel = document.querySelector('.logs-container label span');
-        if (selectLabel) {
-            selectLabel.textContent = I18n.translate('SELECT_LOG_FILE', '选择日志文件');
-        }
+        if (selectLabel) selectLabel.textContent = I18n.translate('SELECT_LOG_FILE', '选择日志文件');
 
         const emptyState = document.querySelector('.empty-state');
         if (emptyState) {
@@ -530,11 +466,8 @@ const LogsPage = {
         const container = document.getElementById('logs-display-container');
         if (container) {
             container.removeEventListener('scroll', this.handleScroll.bind(this));
-            container.querySelectorAll('*').forEach(element => {
-                element.replaceWith(element.cloneNode(true));
-            });
+            container.querySelectorAll('*').forEach(element => element.replaceWith(element.cloneNode(true)));
         }
     }
 };
-
 window.LogsPage = LogsPage;
