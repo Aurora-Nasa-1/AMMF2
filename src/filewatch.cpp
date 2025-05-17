@@ -6,9 +6,10 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <sys/resource.h>
+#include <sys/stat.h>
 
 #define EVENT_SIZE (sizeof(struct inotify_event))
-#define BUF_LEN (256 * (EVENT_SIZE + 16)) // Further reduced buffer size
+#define BUF_LEN (256 * (EVENT_SIZE + 16))
 
 static int fd = -1, wd = -1;
 static volatile sig_atomic_t running = 1;
@@ -20,7 +21,6 @@ static bool verbose = false;
 static int check_interval = 30;
 static bool low_power_mode = true;
 
-// Adaptive sleep control
 struct SleepControl {
     unsigned int base_interval = 500000;  // 0.5s
     unsigned int max_interval = 5000000;  // 5s
@@ -36,7 +36,9 @@ void log_message(const char* msg, bool is_error = false) {
 
 void handle_signal(int sig) {
     running = 0;
-    log_message("Received signal, shutting down", true);
+    char buffer[64];
+    snprintf(buffer, sizeof(buffer), "Received signal %d, shutting down", sig); // Use sig parameter
+    log_message(buffer, true);
 }
 
 void optimize_process() {
@@ -239,7 +241,7 @@ int main(int argc, char* argv[]) {
 
             if (file_changed && low_power_mode) {
                 adjust_sleep_interval(true);
-                sleep(2); // Reduced from 3s to 2s
+                sleep(2);
             }
         }
     }
