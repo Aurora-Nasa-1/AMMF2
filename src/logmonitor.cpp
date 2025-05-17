@@ -395,7 +395,7 @@ int main(int argc, char* argv[]) {
         signal(SIGINT, signal_handler);
         signal(SIGPIPE, SIG_IGN);
 
-        g_logger->write_log("system", LogLevel::INFO, 
+        g_logger->write_log("main", LogLevel::INFO, 
                             low_power ? "Daemon started (low power)" : "Daemon started");
 
         std::mutex mtx;
@@ -405,7 +405,7 @@ int main(int argc, char* argv[]) {
             cv.wait_for(lock, std::chrono::hours(1));
         }
 
-        g_logger->write_log("system", LogLevel::INFO, "Daemon stopping");
+        g_logger->write_log("main", LogLevel::INFO, "Daemon stopping");
         return 0;
     } else if (command == "write") {
         if (message.empty()) {
