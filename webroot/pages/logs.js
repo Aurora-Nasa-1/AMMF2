@@ -12,22 +12,54 @@ const LogsPage = {
 
     // 日志内容
     logContent: '',
+    async preloadData() {
+        try {
+            const tasks = [
+                this.checkLogsDirectoryExists(`${Core.MODULE_PATH}logs/`),
+                this.scanLogFiles()
+            ];
 
-    // 初始化
+            const [dirExists, _] = await Promise.allSettled(tasks);
+
+            return {
+                dirExists: dirExists.value,
+                logFiles: this.logFiles
+            };
+        } catch (error) {
+            console.warn('预加载日志数据失败:', error);
+            return null;
+        }
+    },
     async init() {
         try {
-            // 检查日志目录是否存在
-            const logsDir = `${Core.MODULE_PATH}logs/`;
-            const dirExists = await this.checkLogsDirectoryExists(logsDir);
+            this.registerActions();
+            // 注册语言切换处理器
+            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
 
-            if (!dirExists) {
-                console.warn(I18n.translate('LOGS_DIR_NOT_FOUND', '日志目录不存在'));
-                this.logContent = I18n.translate('LOGS_DIR_NOT_FOUND', '日志目录不存在');
-                return false;
+            // 获取预加载的数据
+            const preloadedData = PreloadManager.getData('logs');
+            if (preloadedData) {
+                if (!preloadedData.dirExists) {
+                    console.warn(I18n.translate('LOGS_DIR_NOT_FOUND', '日志目录不存在'));
+                    this.logContent = I18n.translate('LOGS_DIR_NOT_FOUND', '日志目录不存在');
+                    return false;
+                }
+
+                this.logFiles = preloadedData.logFiles;
+            } else {
+                // 如果没有预加载数据，则正常加载
+                const logsDir = `${Core.MODULE_PATH}logs/`;
+                const dirExists = await this.checkLogsDirectoryExists(logsDir);
+
+                if (!dirExists) {
+                    console.warn(I18n.translate('LOGS_DIR_NOT_FOUND', '日志目录不存在'));
+                    this.logContent = I18n.translate('LOGS_DIR_NOT_FOUND', '日志目录不存在');
+                    return false;
+                }
+
+                await this.scanLogFiles();
             }
 
-            // 扫描可用的日志文件
-            await this.scanLogFiles();
             // 设置默认日志文件
             if (Object.keys(this.logFiles).length > 0) {
                 this.currentLogFile = Object.keys(this.logFiles)[0];
@@ -35,14 +67,35 @@ const LogsPage = {
             } else {
                 this.logContent = I18n.translate('NO_LOGS_FILES', '没有找到日志文件');
             }
+
             return true;
         } catch (error) {
             console.error(I18n.translate('LOGS_INIT_ERROR', '初始化日志页面失败:'), error);
-            this.logContent = I18n.translate('LOGS_INIT_ERROR', '初始化日志页面失败');
             return false;
         }
     },
-
+    registerActions() {
+        UI.registerPageActions('logs', [
+            {
+                id: 'refresh-logs',
+                icon: 'refresh',
+                title: I18n.translate('REFRESH_LOGS', '刷新日志'),
+                onClick: 'loadLogContent'
+            },
+            {
+                id: 'export-logs',
+                icon: 'download',
+                title: I18n.translate('EXPORT_LOGS', '导出日志'),
+                onClick: 'exportLog',
+            },
+            {
+                id: 'clear-logs',
+                icon: 'delete',
+                title: I18n.translate('CLEAR_LOGS', '清除日志'),
+                onClick: 'clearLog',
+            }
+        ]);
+    },
     // 检查日志目录是否存在
     async checkLogsDirectoryExists(logsDir) {
         try {
@@ -92,16 +145,14 @@ const LogsPage = {
             this.logFiles = {};
         }
     },
-    // 加载日志内容
+    
+    // 重写的日志加载逻辑，使用并行处理
     async loadLogContent(showToast = false) {
         try {
             if (!this.currentLogFile || !this.logFiles[this.currentLogFile]) {
                 this.logContent = I18n.translate('NO_LOG_SELECTED', '未选择日志文件');
                 return;
             }
-
-            // 使用setTimeout让UI有机会更新
-            await new Promise(resolve => setTimeout(resolve, 0));
 
             const logPath = this.logFiles[this.currentLogFile];
 
@@ -119,24 +170,21 @@ const LogsPage = {
                 logsDisplay.classList.add('loading');
             }
 
-            // 使用requestIdleCallback处理大数据
-            await new Promise(resolve => {
-                requestIdleCallback(async () => {
-                    const content = await Core.execCommand(`cat "${logPath}"`);
-                    this.logContent = content || I18n.translate('NO_LOGS', '没有可用的日志');
-
-                    // 更新显示
-                    if (logsDisplay) {
-                        logsDisplay.innerHTML = this.formatLogContent();
-                        logsDisplay.classList.remove('loading');
-                        // 滚动到底部
-                        logsDisplay.scrollTop = logsDisplay.scrollHeight;
-                    }
-
-                    if (showToast) Core.showToast(I18n.translate('LOGS_REFRESHED', '日志已刷新'));
-                    resolve();
-                });
-            });
+            // 使用并行处理加载日志内容
+            // 首先获取文件大小
+            const fileSizeCmd = await Core.execCommand(`wc -c "${logPath}" | awk '{print $1}'`);
+            const fileSize = parseInt(fileSizeCmd.trim(), 10);
+            
+            // 如果文件太大，分块读取
+            if (fileSize > 1024 * 1024) { // 大于1MB的文件
+                // 获取最后100KB的内容，通常日志最新内容在末尾
+                const content = await Core.execCommand(`tail -c 102400 "${logPath}"`);
+                this.processLogContent(content, logsDisplay, showToast);
+            } else {
+                // 小文件直接读取
+                const content = await Core.execCommand(`cat "${logPath}"`);
+                this.processLogContent(content, logsDisplay, showToast);
+            }
         } catch (error) {
             console.error(I18n.translate('LOGS_LOAD_ERROR', '加载日志内容失败:'), error);
             this.logContent = I18n.translate('LOGS_LOAD_ERROR', '加载失败');
@@ -148,6 +196,23 @@ const LogsPage = {
 
             if (showToast) Core.showToast(this.logContent, 'error');
         }
+    },
+
+    // 处理日志内容
+    processLogContent(content, logsDisplay, showToast) {
+        this.logContent = content || I18n.translate('NO_LOGS', '没有可用的日志');
+
+        // 使用微任务处理日志格式化，避免阻塞主线程
+        Promise.resolve().then(() => {
+            if (logsDisplay) {
+                logsDisplay.innerHTML = this.formatLogContent();
+                logsDisplay.classList.remove('loading');
+                // 滚动到底部
+                logsDisplay.scrollTop = logsDisplay.scrollHeight;
+            }
+
+            if (showToast) Core.showToast(I18n.translate('LOGS_REFRESHED', '日志已刷新'));
+        });
     },
 
     // 清除日志
@@ -170,6 +235,10 @@ const LogsPage = {
             // 使用MD3对话框确认
             const dialog = document.createElement('dialog');
             dialog.className = 'md-dialog log-delete-dialog';
+
+            // 确保对话框在body中居中
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+
             dialog.innerHTML = `
                 <h2>${I18n.translate('CLEAR_LOGS', '清除日志')}</h2>
                 <p>${I18n.translate('CONFIRM_CLEAR_LOG', '确定要清除此日志文件吗？此操作不可撤销。')}</p>
@@ -178,10 +247,14 @@ const LogsPage = {
                     <button class="dialog-button filled" data-action="confirm">${I18n.translate('CONFIRM', '确认')}</button>
                 </div>
             `;
+
+            // 先添加到DOM
             document.body.appendChild(dialog);
 
             // 显示对话框
-            dialog.showModal();
+            requestAnimationFrame(() => {
+                dialog.showModal();
+            });
 
             // 处理对话框按钮点击
             return new Promise((resolve, reject) => {
@@ -194,7 +267,8 @@ const LogsPage = {
                         setTimeout(() => {
                             dialog.close();
                             document.body.removeChild(dialog);
-                        }, 120); // 与 fadeOut 动画时长匹配
+                            document.body.style.overflow = ''; // 恢复背景滚动
+                        }, 120);
 
                         if (action === 'confirm') {
                             try {
@@ -261,48 +335,92 @@ const LogsPage = {
             .replace(/'/g, "&#039;");
     },
 
-    // 虚拟滚动相关配置
+    // 优化的虚拟滚动相关配置
     virtualScroll: {
-        itemHeight: 48,
-        bufferSize: 10,
+        itemHeight: 24, // 减小每行高度，减少上方间隔
+        bufferSize: 5,  // 缓冲区大小
         visibleItems: [],
         totalItems: [],
         scrollTop: 0,
         lastScrollTime: 0,
-        scrollThrottle: 16
-    },
-
-    destroy() {
-        const container = document.getElementById('logs-display-container');
-        if (container) {
-            container.removeEventListener('scroll', this.handleScroll);
-            // 移除所有动态创建的事件监听
-            container.querySelectorAll('*').forEach(element => {
-                element.replaceWith(element.cloneNode(true));
-            });
-        }
+        scrollThrottle: 32, // 增加节流时间
+        isProcessing: false,
+        chunkSize: 100 // 分块处理的大小
     },
 
     // 处理滚动事件
     handleScroll(event) {
+        if (this.virtualScroll.isProcessing) return;
+
         const now = Date.now();
-        if (now - this.virtualScroll.lastScrollTime < this.virtualScroll.scrollThrottle) {
-            return; // 跳过过于频繁的更新
-        }
+        if (now - this.virtualScroll.lastScrollTime < this.virtualScroll.scrollThrottle) return;
 
-        const container = event.target;
-        this.virtualScroll.scrollTop = container.scrollTop;
+        this.virtualScroll.scrollTop = event.target.scrollTop;
         this.virtualScroll.lastScrollTime = now;
+        this.virtualScroll.isProcessing = true;
 
-        // 使用requestAnimationFrame优化滚动性能
-        if (!this._scrollRAF) {
-            this._scrollRAF = requestAnimationFrame(() => {
-                const logsDisplay = document.getElementById('logs-display');
-                if (logsDisplay) {
-                    logsDisplay.innerHTML = this.renderVirtualScroll();
-                }
-                this._scrollRAF = null;
+        // 使用requestAnimationFrame确保在下一帧渲染前更新
+        requestAnimationFrame(() => {
+            this.updateVisibleItems();
+            this.virtualScroll.isProcessing = false;
+        });
+    },
+
+    // 更新可见项
+    updateVisibleItems() {
+        const container = document.getElementById('logs-display-container');
+        if (!container) return;
+
+        const { itemHeight, bufferSize, totalItems, scrollTop, chunkSize } = this.virtualScroll;
+        const containerHeight = container.clientHeight;
+        const visibleCount = Math.ceil(containerHeight / itemHeight);
+        const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - bufferSize);
+        const endIndex = Math.min(totalItems.length, startIndex + visibleCount + 2 * bufferSize);
+
+        // 分块处理，避免一次性处理太多项导致卡顿
+        this.renderChunkedItems(startIndex, endIndex);
+    },
+
+    // 分块渲染可见项
+    renderChunkedItems(startIndex, endIndex) {
+        const { totalItems, chunkSize, itemHeight } = this.virtualScroll;
+        const totalHeight = totalItems.length * itemHeight;
+        const visibleItems = totalItems.slice(startIndex, endIndex);
+        
+        // 创建文档片段，减少DOM操作
+        const fragment = document.createDocumentFragment();
+        const container = document.createElement('div');
+        container.className = 'virtual-scroll-container';
+        container.style.height = `${totalHeight}px`;
+        fragment.appendChild(container);
+
+        // 分块处理
+        const processChunk = (items, chunkIndex) => {
+            const chunk = items.slice(chunkIndex, chunkIndex + chunkSize);
+            if (chunk.length === 0) return;
+
+            chunk.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `log-line ${item.logClass || ''}`;
+                div.style.transform = `translateY(${(startIndex + chunkIndex + index) * itemHeight}px)`;
+                div.innerHTML = item.content;
+                container.appendChild(div);
             });
+
+            // 如果还有剩余项，继续处理下一块
+            if (chunkIndex + chunkSize < items.length) {
+                setTimeout(() => processChunk(items, chunkIndex + chunkSize), 0);
+            }
+        };
+
+        // 开始处理第一块
+        processChunk(visibleItems, 0);
+
+        // 更新DOM
+        const logsDisplay = document.getElementById('logs-display');
+        if (logsDisplay) {
+            logsDisplay.innerHTML = '';
+            logsDisplay.appendChild(fragment);
         }
     },
 
@@ -312,63 +430,78 @@ const LogsPage = {
             return `<div class="empty-state">${I18n.translate('NO_LOGS', '没有可用的日志')}</div>`;
         }
 
-        // 将日志内容分割成行
-        this.virtualScroll.totalItems = this.logContent.split('\n').map((line, index) => {
-            return {
-                id: index,
-                content: this.formatLogLine(line)
-            };
-        });
+        // 分行并过滤空行
+        const lines = this.logContent.split('\n').filter(line => line.trim());
+        
+        // 并行处理日志行
+        this.virtualScroll.totalItems = this.processLogLines(lines);
 
-        // 初始化虚拟滚动
-        return this.renderVirtualScroll();
+        // 获取初始可见区域
+        const containerHeight = document.getElementById('logs-display-container')?.clientHeight || 500;
+        const visibleCount = Math.ceil(containerHeight / this.virtualScroll.itemHeight);
+        const endIndex = Math.min(this.virtualScroll.totalItems.length, visibleCount + 2 * this.virtualScroll.bufferSize);
+        
+        // 渲染初始可见项
+        const fragment = document.createDocumentFragment();
+        const container = document.createElement('div');
+        container.className = 'virtual-scroll-container';
+        container.style.height = `${this.virtualScroll.totalItems.length * this.virtualScroll.itemHeight}px`;
+        
+        this.virtualScroll.totalItems.slice(0, endIndex).forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = `log-line ${item.logClass || ''}`;
+            div.style.transform = `translateY(${index * this.virtualScroll.itemHeight}px)`;
+            div.innerHTML = item.content;
+            container.appendChild(div);
+        });
+        
+        fragment.appendChild(container);
+        return fragment.firstChild.outerHTML;
     },
 
-    // 格式化单行日志
-    formatLogLine(line) {
-        if (!line.trim()) return '';
+    // 并行处理日志行
+    processLogLines(lines) {
+        // 使用分块处理，每次处理一部分行
+        const { chunkSize } = this.virtualScroll;
+        const totalItems = [];
+        
+        // 处理一批日志行
+        for (let i = 0; i < lines.length; i += chunkSize) {
+            const chunk = lines.slice(i, i + chunkSize);
+            const processedChunk = chunk.map((line, index) => this.processLogLine(line, i + index));
+            totalItems.push(...processedChunk);
+        }
+        
+        return totalItems;
+    },
+
+    // 处理单行日志
+    processLogLine(line, id) {
+        if (!line.trim()) return { id, content: '', logClass: '' };
 
         let formatted = this.escapeHtml(line);
-        let levelTag = '';
+        let logClass = '';
 
         // 解析日志级别
         const levelMatch = formatted.match(/\[(ERROR|WARN|INFO|DEBUG)\]/);
         if (levelMatch) {
-            const level = levelMatch[1];
-            const levelClass = level.toLowerCase();
-            let icon = '';
-
-            switch (levelClass) {
-                case 'error':
-                    icon = '<span class="material-symbols-rounded">error</span>';
-                    break;
-                case 'warn':
-                    icon = '<span class="material-symbols-rounded">warning</span>';
-                    break;
-                case 'info':
-                    icon = '<span class="material-symbols-rounded">info</span>';
-                    break;
-                case 'debug':
-                    icon = '<span class="material-symbols-rounded">code</span>';
-                    break;
-            }
-
-            levelTag = `<span class="log-level ${levelClass}">${icon}${level}</span>`;
-            formatted = formatted.replace(levelMatch[0], '');
+            logClass = levelMatch[1].toLowerCase();
+            formatted = formatted.replace(levelMatch[0], '').trim();
         }
 
-        // 解析时间戳（假设日志格式包含ISO时间戳）
+        // 解析时间戳
         const timeMatch = formatted.match(/\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}/);
         if (timeMatch) {
             const timestamp = new Date(timeMatch[0]);
             const relativeTime = this.getRelativeTimeString(timestamp);
-            formatted = formatted.replace(timeMatch[0], relativeTime);
+            formatted = formatted.replace(timeMatch[0], relativeTime).trim();
         }
 
-        // 将日志级别标签放在最前面
-        return levelTag + formatted;
-
-        return formatted;
+        return {
+            id,
+            content: formatted,
+            logClass
+        };
     },
 
     // 获取相对时间字符串
@@ -409,68 +542,24 @@ const LogsPage = {
         });
     },
 
-    // 渲染虚拟滚动
-    renderVirtualScroll() {
-        const totalHeight = this.virtualScroll.totalItems.length * this.virtualScroll.itemHeight;
-        const containerHeight = document.getElementById('logs-display-container')?.clientHeight || 500;
-        const visibleCount = Math.ceil(containerHeight / this.virtualScroll.itemHeight);
-
-        // 计算可见区域的起始索引，确保从顶部开始
-        const startIndex = Math.max(0, Math.floor(this.virtualScroll.scrollTop / this.virtualScroll.itemHeight) - this.virtualScroll.bufferSize);
-        const endIndex = Math.min(
-            this.virtualScroll.totalItems.length,
-            startIndex + visibleCount + 2 * this.virtualScroll.bufferSize
-        );
-
-        // 获取可见项并设置精确的定位
-        this.virtualScroll.visibleItems = this.virtualScroll.totalItems.slice(startIndex, endIndex);
-
-        return `
-            <div class="virtual-scroll-container" style="height: ${totalHeight}px;">
-                <div class="virtual-scroll-content">
-                    ${this.virtualScroll.visibleItems.map((item, index) =>
-            `<div class="log-line" style="top: ${(startIndex + index) * this.virtualScroll.itemHeight}px;">${item.content}</div>`
-        ).join('')}
-                </div>
-            </div>
-        `;
-    },
-
     // 渲染页面
     render() {
-        // 设置页面标题
-        document.getElementById('page-title').textContent = I18n.translate('NAV_LOGS', '日志');
-
-        // 添加操作按钮
-        const pageActions = document.getElementById('page-actions');
-        pageActions.innerHTML = `
-            <button id="refresh-logs" class="icon-button" title="${I18n.translate('REFRESH_LOGS', '刷新日志')}">
-                <span class="material-symbols-rounded">refresh</span>
-            </button>
-            <button id="export-logs" class="icon-button" title="${I18n.translate('EXPORT_LOGS', '导出日志')}">
-                <span class="material-symbols-rounded">download</span>
-            </button>
-            <button id="clear-logs" class="icon-button" title="${I18n.translate('CLEAR_LOGS', '清除日志')}">
-                <span class="material-symbols-rounded">delete</span>
-            </button>
-        `;
-
         const hasLogFiles = Object.keys(this.logFiles).length > 0;
 
         return `
             <div class="logs-container">
-                        <div class="controls-row">
-                            <label>
-                                <span>${I18n.translate('SELECT_LOG_FILE', '选择日志文件')}</span>
-                                <select id="log-file-select" ${!hasLogFiles ? 'disabled' : ''}>
-                                    ${this.renderLogFileOptions()}
-                                </select>
-                            </label>
-                        </div>
-                    
-                    <div id="logs-display-container" class="card-content">
-                        <div class="logs-scroll-container">
-                            <pre id="logs-display" class="logs-content">${this.formatLogContent()}</pre>
+                <div class="controls-row">
+                    <label>
+                        <span>${I18n.translate('SELECT_LOG_FILE', '选择日志文件')}</span>
+                        <select id="log-file-select" ${!hasLogFiles ? 'disabled' : ''}>
+                            ${this.renderLogFileOptions()}
+                        </select>
+                    </label>
+                </div>
+                
+                <div id="logs-display-container" class="card-content">
+                    <div class="logs-scroll-container">
+                        <div id="logs-display" class="logs-content">${this.formatLogContent()}</div>
                     </div>
                 </div>
             </div>
@@ -496,99 +585,48 @@ const LogsPage = {
             this.loadLogContent(true);
         });
 
-        // 刷新按钮事件
-        document.getElementById('refresh-logs')?.addEventListener('click', () => {
-            this.loadLogContent(true);
-        });
-
-        // 清除日志按钮事件
-        document.getElementById('clear-logs')?.addEventListener('click', () => {
-            this.clearLog();
-        });
-
-        // 导出日志按钮事件
-        document.getElementById('export-logs')?.addEventListener('click', () => {
-            this.exportLog();
-        });
-        // 添加日志显示区域的样式
-        const logsDisplay = document.getElementById('logs-display');
-        if (logsDisplay) {
-            // 检测是否为空内容
-            if (this.logContent.trim() === '') {
-                logsDisplay.classList.add('empty');
-            } else {
-                logsDisplay.classList.remove('empty');
-            }
-        }
-
-        // 设置日志容器高度
-        this.adjustLogContainerHeight();
-        document.addEventListener('languageChanged', async () => {
-            // 更新页面标题
-            document.getElementById('page-title').textContent = I18n.translate('NAV_LOGS', '日志');
-
-            // 更新操作按钮的标题
-            const refreshButton = document.getElementById('refresh-logs');
-            if (refreshButton) {
-                refreshButton.title = I18n.translate('REFRESH_LOGS', '刷新日志');
-            }
-            const exportButton = document.getElementById('export-logs');
-            if (exportButton) {
-                exportButton.title = I18n.translate('EXPORT_LOGS', '导出日志');
-            }
-            const clearButton = document.getElementById('clear-logs');
-            if (clearButton) {
-                clearButton.title = I18n.translate('CLEAR_LOGS', '清除日志');
-            }
-
-            // 重新渲染日志文件选择器
-            const logFileSelect = document.getElementById('log-file-select');
-            if (logFileSelect) {
-                logFileSelect.innerHTML = this.renderLogFileOptions();
-            }
-                await this.loadLogContent(false);
-        });
-        // 监听窗口大小变化
-        window.addEventListener('resize', this.adjustLogContainerHeight);
-    },
-
-    // 调整日志容器高度
-    adjustLogContainerHeight() {
+        // 滚动容器事件
         const container = document.getElementById('logs-display-container');
         if (container) {
-            const viewportHeight = window.innerHeight;
-            const headerHeight = document.querySelector('header')?.offsetHeight || 0;
-            const navHeight = document.querySelector('.app-nav')?.offsetHeight || 0;
-            const controlsHeight = document.querySelector('.controls-row')?.offsetHeight || 0;
+            container.addEventListener('scroll', this.handleScroll.bind(this));
+        }
 
-            // 计算可用高度
-            const availableHeight = viewportHeight - headerHeight - navHeight - controlsHeight - 40; // 40px为其他边距
+        // 语言变更处理
+        this.onLanguageChanged();
+    },
 
-            // 设置最小高度
-            container.style.minHeight = `${Math.max(300, availableHeight)}px`;
+    // 语言变更处理
+    onLanguageChanged() {
+        // 更新页面操作按钮
+        this.registerActions();
+
+        // 更新选择器标签
+        const selectLabel = document.querySelector('.logs-container label span');
+        if (selectLabel) {
+            selectLabel.textContent = I18n.translate('SELECT_LOG_FILE', '选择日志文件');
+        }
+
+        // 如果有空状态，更新文本
+        const emptyState = document.querySelector('.empty-state');
+        if (emptyState) {
+            if (Object.keys(this.logFiles).length === 0) {
+                emptyState.textContent = I18n.translate('NO_LOGS_FILES', '没有可用的日志文件');
+            } else if (!this.logContent || this.logContent.trim() === '') {
+                emptyState.textContent = I18n.translate('NO_LOGS', '没有可用的日志');
+            }
         }
     },
 
-    // 页面激活/停用回调
-    onActivate() {
-        // 刷新日志文件列表
-        this.scanLogFiles().then(() => {
-            // 如果当前选择的日志文件不在列表中，选择第一个
-            if (this.currentLogFile && !this.logFiles[this.currentLogFile] && Object.keys(this.logFiles).length > 0) {
-                this.currentLogFile = Object.keys(this.logFiles)[0];
-            }
-            // 加载日志内容
-            this.loadLogContent();
-            this.adjustLogContainerHeight();
-        });
-
-        // 添加窗口大小变化监听
-        window.addEventListener('resize', this.adjustLogContainerHeight);
-    },
-
-    onDeactivate() {
-        window.removeEventListener('resize', this.adjustLogContainerHeight);
+    // 销毁页面
+    destroy() {
+        const container = document.getElementById('logs-display-container');
+        if (container) {
+            container.removeEventListener('scroll', this.handleScroll.bind(this));
+            // 移除所有动态创建的事件监听
+            container.querySelectorAll('*').forEach(element => {
+                element.replaceWith(element.cloneNode(true));
+            });
+        }
     }
 };
-
 window.LogsPage = LogsPage;

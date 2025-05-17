@@ -4,115 +4,63 @@
  */
 
  .logs-container {
-    padding: var(--spacing-s);
-    height: calc(100vh - var(--header-height));
+    padding: var(--spacing-xs);
+    height: calc(100vh - var(--header-height) - var(--spacing-s));
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .logs-scroll-container {
-    position: relative;
     overflow-y: auto;
-    width: 100%;
     height: 100%;
-    margin: 0;
-    padding: 0;
 }
 
 .virtual-scroll-container {
     position: relative;
     width: 100%;
-    margin: 0;
-    padding: 0;
-}
-
-.virtual-scroll-content {
-    position: absolute;
-    width: 100%;
-    left: 0;
-    top: 0;
-    margin: 0;
-    padding: 0;
-}
-
-.log-line:hover {
-    background-color: color-mix(in oklch, var(--on-surface) 2%, transparent);
-}
-
-.log-level {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--spacing-xs) var(--spacing-xs);
-    border-radius: var(--border-radius-s);
-    margin-right: var(--spacing-s);
-    font: var(--label-s);
-    min-width: 70px;
-    background-clip: padding-box;
 }
 
 .log-line {
     position: absolute;
     width: 100%;
-    left: 0;
-    padding: var(--spacing-s) var(--spacing-s);
+    padding: var(--spacing-xs) var(--spacing-m);
     box-sizing: border-box;
-    margin: 0;
+    border-left: 3px solid transparent;
+    line-height: 1.2;
+    font-size: 14px;
+    will-change: transform;
 }
-
-.log-level .material-symbols-rounded {
-    font-size: var(--icon-size-s);
-    margin-right: var(--spacing-xs);
-    
-}
-
-.log-level.error {
-    color: var(--error);
-    background-color: var(--error-container);
-}
-
-.log-level.warn {
-    color: var(--secondary);
-    background-color: var(--secondary-container);
-}
-
-.log-level.info {
-    color: var(--primary);
-    background-color: var(--primary-container);
-}
-
-.log-level.debug {
-    color: var(--on-surface);
-    background-color: var(--surface-container-high);
-}
+.log-line.error { border-left-color: var(--error); }
+.log-line.warn { border-left-color: var(--secondary); }
+.log-line.info { border-left-color: var(--primary); }
+.log-line.debug { border-left-color: var(--on-surface-variant); }
 
 .empty-state {
     text-align: center;
-    padding: var(--spacing-xxl);
+    padding: var(--spacing-m);
     color: var(--on-surface-variant);
-    font: var(--body-m);
 }
 
-/* 加载状态样式 */
 .logs-content.loading {
     opacity: 0.6;
     pointer-events: none;
 }
-
-/* 日志删除对话框样式 */
+/* 日志对话框样式 */
 .log-delete-dialog {
     padding: var(--spacing-xl);
     border-radius: var(--border-radius-l);
     border: none;
-    box-shadow: var(--ele2);
     max-width: 400px;
     width: 90%;
     background-color: var(--surface-container);
     position: fixed;
-    top: 50%;
+    top: 50vh;
     left: 50%;
     transform: translate(-50%, -50%);
+    margin: 0;
+    z-index: 1000;
 }
-
 .log-delete-dialog::backdrop {
     background-color: oklch(0 0 0 / .4);
 }
