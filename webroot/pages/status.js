@@ -29,14 +29,14 @@ const StatusPage = {
     async checkUpdate() {
         if (this.updateChecking) return; // 避免重复检查
         this.updateChecking = true;
-    
+
         try {
             if (this.testMode.enabled) {
                 this.latestVersion = this.testMode.mockVersion;
             } else {
                 this.latestVersion = await this.getLatestVersion();
             }
-            
+
             if (this.latestVersion) {
                 const currentVersionParsed = this.parseVersion(this.currentVersion);
                 if (!currentVersionParsed) {
@@ -48,7 +48,7 @@ const StatusPage = {
                 this.updateAvailable = false;
                 this.updateError = null; // 不显示错误，因为可能是没有发布版本
             }
-    
+
             // 修改这里：不直接操作 DOM，而是触发一个自定义事件
             const event = new CustomEvent('updateCheckComplete', {
                 detail: {
@@ -247,14 +247,55 @@ const StatusPage = {
     // 添加版本信息相关属性
     moduleInfo: {},
     version: null,
-    
-    // 在 init 方法中添加版本信息获取
+
+    async preloadData() {
+        try {
+            const tasks = [
+                this.loadModuleInfo(),
+                this.loadDeviceInfo(),
+                this.getLogCount(),
+                this.getLatestVersion()
+            ];
+
+            const [moduleInfo, deviceInfo, logCount, latestVersion] = await Promise.allSettled(tasks);
+
+            return {
+                moduleInfo: moduleInfo.value || {},
+                deviceInfo: deviceInfo.value || {},
+                logCount: logCount.value || 0,
+                latestVersion: latestVersion.value
+            };
+        } catch (error) {
+            console.warn('预加载数据失败:', error);
+            return null;
+        }
+    },
+
+    // 修改 init 方法以使用预加载数据
     async init() {
         try {
-            await this.loadModuleInfo();
-            await this.loadModuleStatus();
-            await this.loadDeviceInfo();
-            await this.getLogCount();
+            // 注册操作按钮
+            this.registerActions();
+
+            // 注册语言切换处理器
+            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+
+            // 获取预加载的数据
+            const preloadedData = PreloadManager.getData('status');
+            if (preloadedData) {
+                this.moduleInfo = preloadedData.moduleInfo;
+                this.deviceInfo = preloadedData.deviceInfo;
+                this.logCount = preloadedData.logCount;
+                this.latestVersion = preloadedData.latestVersion;
+                this.version = this.moduleInfo.version || 'Unknown';
+            } else {
+                // 如果没有预加载数据，则正常加载
+                await this.loadModuleInfo();
+                await this.loadDeviceInfo();
+                await this.getLogCount();
+            }
+
+            await this.loadModuleStatus(); // 实时状态始终需要加载
             this.startAutoRefresh();
             this.checkUpdate();
             return true;
@@ -263,8 +304,7 @@ const StatusPage = {
             return false;
         }
     },
-    
-    // 添加加载模块信息的方法
+
     async loadModuleInfo() {
         try {
             // 检查是否有缓存的模块信息
@@ -274,15 +314,15 @@ const StatusPage = {
                 this.version = this.moduleInfo.version || 'Unknown';
                 return;
             }
-            
+
             // 尝试从配置文件获取模块信息
             const configOutput = await Core.execCommand(`cat "${Core.MODULE_PATH}module.prop"`);
-            
+
             if (configOutput) {
                 // 解析配置文件
                 const lines = configOutput.split('\n');
                 const config = {};
-                
+
                 lines.forEach(line => {
                     const parts = line.split('=');
                     if (parts.length >= 2) {
@@ -291,7 +331,7 @@ const StatusPage = {
                         config[key] = value;
                     }
                 });
-                
+
                 this.moduleInfo = config;
                 this.version = config.version || 'Unknown';
                 // 缓存模块信息
@@ -316,23 +356,24 @@ const StatusPage = {
             this.logCount = 0;
         }
     },
-
+    registerActions() {
+        UI.registerPageActions('status', [
+            {
+                id: 'refresh-status',
+                icon: 'refresh',
+                title: I18n.translate('REFRESH', '刷新'),
+                onClick: 'refreshStatus'
+            },
+            {
+                id: 'run-action',
+                icon: 'play_arrow',
+                title: I18n.translate('RUN_ACTION', '运行Action'),
+                onClick: 'runAction'
+            }
+        ]);
+    },
     // 修改渲染方法中的状态卡片部分
     render() {
-        // 设置页面标题
-        document.getElementById('page-title').textContent = I18n.translate('NAV_STATUS', '状态');
-
-        const pageActions = document.getElementById('page-actions');
-        pageActions.innerHTML = `
-        <button id="refresh-status" class="icon-button" title="${I18n.translate('REFRESH', '刷新')}">
-            <span class="material-symbols-rounded">refresh</span>
-        </button>
-        <button id="run-action" class="icon-button" title="${I18n.translate('RUN_ACTION', '运行Action')}">
-            <span class="material-symbols-rounded">play_arrow</span>
-        </button>
-    `;
-
-        // 渲染页面内容
         return `
         <div class="status-page">
             <div class="update-banner-container">
@@ -736,6 +777,28 @@ const StatusPage = {
             default: return I18n.translate('UNKNOWN', '未知');
         }
     },
+    // 添加语言切换处理方法
+    onLanguageChanged() {
+        const statusPage = document.querySelector('.status-page');
+        if (statusPage) {
+            statusPage.innerHTML = this.render();
+            this.afterRender();
+        }
+    },
+
+    // 修改 onDeactivate 方法
+    onDeactivate() {
+        // 注销语言切换处理器
+        app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        // 停止自动刷新
+        if (this.refreshTimer) {
+            clearInterval(this.refreshTimer);
+            this.refreshTimer = null;
+        }
+        this.stopAutoRefresh();
+        // 清理页面操作按钮
+        UI.clearPageActions();
+    },
     // 页面激活时的回调
     onActivate() {
         console.log('状态页面已激活');
@@ -746,13 +809,6 @@ const StatusPage = {
         // 启动自动刷新
         this.startAutoRefresh();
     },
-
-    onDeactivate() {
-        console.log('状态页面已停用');
-        // 停止自动刷新但保留状态数据
-        this.stopAutoRefresh();
-    }
 };
-
 // 导出状态页面模块
 window.StatusPage = StatusPage;

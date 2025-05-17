@@ -19,22 +19,50 @@ const SettingsPage = {
     isLoading: false,
     isCancelled: false,
 
-    // 初始化
-    async init() {
+    // 预加载数据
+    async preloadData() {
+        try {
+            const [settingsData, settingsMetadata] = await Promise.all([
+                this.loadSettingsData(),
+                this.loadSettingsMetadata()
+            ]);
+            return { settingsData, settingsMetadata };
+        } catch (error) {
+            console.error('预加载设置数据失败:', error);
+            return null;
+        }
+    },
+
+    // 使用预加载的数据初始化
+    async init(preloadedData) {
         try {
             this.isCancelled = false;
-
+            this.registerActions();
+            
+            // 注册语言切换处理器
+            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+            
             // 如果有临时表单状态且有未保存的更改，优先使用临时状态
             if (this.tempFormState && Object.keys(this.tempFormState).length > 0 && this.hasUnsavedChanges) {
                 console.log('恢复未保存的设置更改');
-                await this.loadSettingsMetadata();
+                if (!this.settingsDescriptions) {
+                    await this.loadSettingsMetadata();
+                }
                 this.settings = { ...this.tempFormState };
                 return true;
             }
 
             this.hasUnsavedChanges = false;
-            await this.loadSettingsData();
-            await this.loadSettingsMetadata();
+            // 使用预加载的数据或重新加载
+            if (preloadedData) {
+                this.settings = preloadedData.settingsData;
+                this.settingsDescriptions = preloadedData.settingsMetadata.descriptions;
+                this.settingsOptions = preloadedData.settingsMetadata.options;
+                this.excludedSettings = preloadedData.settingsMetadata.excluded;
+            } else {
+                await this.loadSettingsData();
+                await this.loadSettingsMetadata();
+            }
 
             // 创建设置备份
             this.createSettingsBackup();
@@ -44,6 +72,36 @@ const SettingsPage = {
             console.error('初始化设置页面失败:', error);
             return false;
         }
+    },
+
+    // 添加语言切换处理方法
+    onLanguageChanged() {
+        const settingsContainer = document.getElementById('settings-container');
+        if (settingsContainer) {
+            settingsContainer.innerHTML = this.renderSettings();
+            // 使用 requestAnimationFrame 延迟 afterRender 的执行，确保在浏览器完成 DOM 更新后执行
+            requestAnimationFrame(() => {
+                this.afterRender();
+            });
+        }
+    },
+
+    // 修改 registerActions 方法，添加禁用状态控制
+    registerActions() {
+        UI.registerPageActions('settings', [
+            {
+                id: 'save-settings',
+                icon: 'save',
+                title: I18n.translate('SAVE_SETTINGS', '保存设置'),
+                onClick: 'saveSettings',
+            },
+            {
+                id: 'restore-settings',
+                icon: 'restore',
+                title: I18n.translate('RESTORE_SETTINGS', '还原设置'),
+                onClick: 'restoreSettings',
+            }
+        ]);
     },
 
     // 创建设置备份
@@ -742,15 +800,6 @@ const SettingsPage = {
 
     // 渲染后的回调
     async afterRender() {
-        // 添加页面操作按钮
-        this.setupPageActions();
-
-        // 添加语言变更事件监听
-        document.addEventListener('languageChanged', () => {
-            // 更新设置显示
-            this.updateSettingsDisplay();
-        });
-
         try {
             // 显示加载状态
             this.showLoading();
@@ -760,7 +809,6 @@ const SettingsPage = {
 
             // 更新设置显示
             this.updateSettingsDisplay();
-
             // 绑定设置项事件
             this.bindSettingEvents();
         } catch (error) {
@@ -768,44 +816,6 @@ const SettingsPage = {
             Core.showToast(I18n.translate('SETTINGS_INIT_ERROR', '设置页面初始化失败'), 'error');
         } finally {
             this.hideLoading();
-        }
-    },
-
-    // 设置页面操作按钮
-    setupPageActions() {
-        const pageActions = document.getElementById('page-actions');
-        if (pageActions) {
-            pageActions.innerHTML = `
-                <button id="restore-settings" class="icon-button" title="${I18n.translate('RESTORE', '还原')}">
-                    <span class="material-symbols-rounded">restore</span>
-                </button>
-                <button id="refresh-settings" class="icon-button" title="${I18n.translate('REFRESH', '刷新')}">
-                    <span class="material-symbols-rounded">refresh</span>
-                </button>
-                <button id="save-settings" class="icon-button" title="${I18n.translate('SAVE', '保存')}">
-                    <span class="material-symbols-rounded">save</span>
-                </button>
-            `;
-
-            // 绑定还原按钮事件
-            const restoreButton = document.getElementById('restore-settings');
-            if (restoreButton) {
-                restoreButton.addEventListener('click', () => this.restoreSettings());
-            }
-
-            // 绑定刷新按钮事件
-            const refreshButton = document.getElementById('refresh-settings');
-            if (refreshButton) {
-                refreshButton.addEventListener('click', () => {
-                    this.refreshSettings();
-                });
-            }
-
-            // 绑定保存按钮事件
-            const saveButton = document.getElementById('save-settings');
-            if (saveButton) {
-                saveButton.addEventListener('click', () => this.saveSettings());
-            }
         }
     },
 
@@ -857,13 +867,12 @@ const SettingsPage = {
         if (this.hasUnsavedChanges || this.checkForUnsavedChanges()) {
             Core.showToast(I18n.translate('UNSAVED_SETTINGS', '设置有未保存的更改'), 'warning');
         }
-
+        // 注销语言切换处理器
+        app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        // 清理页面操作按钮
+        UI.clearPageActions();
         // 设置取消标志，用于中断正在进行的异步操作
         this.isCancelled = true;
-
-        // 移除语言变更事件监听器
-        document.removeEventListener('languageChanged', this.updateSettingsDisplay);
-
         // 清理资源
         this.cleanupResources();
     },

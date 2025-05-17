@@ -12,21 +12,51 @@ const AboutPage = {
         showThemeToggle: false  // 控制是否显示主题切换按钮
     },
     
-    // 初始化
+    // 预加载数据
+    async preloadData() {
+        try {
+            // 检查是否有缓存的模块信息
+            const cachedInfo = sessionStorage.getItem('moduleInfo');
+            if (cachedInfo) {
+                return JSON.parse(cachedInfo);
+            }
+            
+            // 尝试从配置文件获取模块信息
+            const configOutput = await Core.execCommand(`cat "${Core.MODULE_PATH}module.prop"`);
+            if (configOutput) {
+                const lines = configOutput.split('\n');
+                const config = {};
+                
+                lines.forEach(line => {
+                    const parts = line.split('=');
+                    if (parts.length >= 2) {
+                        const key = parts[0].trim();
+                        const value = parts.slice(1).join('=').trim();
+                        config[key] = value;
+                    }
+                });
+                
+                // 缓存模块信息
+                sessionStorage.setItem('moduleInfo', JSON.stringify(config));
+                return config;
+            }
+            return {};
+        } catch (error) {
+            console.warn('预加载模块信息失败:', error);
+            return {};
+        }
+    },
+    
+    // 修改初始化方法
     async init() {
         try {
-            // 加载模块信息
-            await this.loadModuleInfo();
+            this.registerActions();
+            // 使用预加载的数据
+            const preloadedData = PreloadManager.getData('about') || await this.preloadData();
+            this.moduleInfo = preloadedData;
             
-            // 添加语言变化事件监听
-            document.addEventListener('languageChanged', () => {
-                // 重新渲染页面内容
-                const aboutContent = document.querySelector('.about-container');
-                if (aboutContent) {
-                    aboutContent.outerHTML = this.render().trim();
-                    this.afterRender();
-                }
-            });
+            // 注册语言切换处理器
+            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
             
             return true;
         } catch (error) {
@@ -34,33 +64,53 @@ const AboutPage = {
             return false;
         }
     },
-    
-    // 渲染页面
-    render() {
-        // 设置页面标题
-        document.getElementById('page-title').textContent = I18n.translate('NAV_ABOUT', '关于');
-        
-        // 添加刷新按钮和切换CSS样式按钮到页面操作区
-        const buttons = [`
-            <button id="refresh-about" class="icon-button" title="${I18n.translate('REFRESH', '刷新')}">
-                <span class="material-symbols-rounded">refresh</span>
-            </button>
-            <button id="color-picker" class="icon-button" title="${I18n.translate('COLOR_PICKER', '颜色选择器')}">
-                <span class="material-symbols-rounded">palette</span>
-            </button>
-        `];
-        
-        // 根据配置决定是否显示主题切换按钮
-        if (this.config.showThemeToggle) {
-            buttons.push(`
-                <button id="toggle-css" class="icon-button" title="${I18n.translate('TOGGLE_CSS', '切换样式')}">
-                    <span class="material-symbols-rounded">palette</span>
-                </button>
-            `);
+
+    // 添加语言切换处理方法
+    onLanguageChanged() {
+        const aboutContent = document.querySelector('.about-container');
+        if (aboutContent) {
+            aboutContent.outerHTML = this.render().trim();
+            this.afterRender();
         }
+    },
+
+    // 添加清理方法
+    onDeactivate() {
+        // 注销语言切换处理器
+        app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        // 清理页面操作按钮
+        UI.clearPageActions();
+    },
+    registerActions() {
+        // 注册页面操作按钮
+        UI.registerPageActions('about', [
+            {
+                id: 'refresh-about',
+                icon: 'refresh',
+                title: I18n.translate('REFRESH', '刷新'),
+                onClick: 'refreshModuleInfo'
+            },
+            {
+                id: 'color-picker',
+                icon: 'palette',
+                title: I18n.translate('COLOR_PICKER', '颜色选择器'),
+                onClick: 'showColorPicker'
+            }
+        ]);
         
-        document.getElementById('page-actions').innerHTML = buttons.join('');
-        
+        if (this.config.showThemeToggle) {
+            UI.registerPageActions('about', [
+                {
+                    id: 'toggle-css',
+                    icon: 'palette',
+                    title: I18n.translate('TOGGLE_CSS', '切换样式'),
+                    onClick: 'toggleCSS'
+                }
+            ]);
+        }
+    },
+    
+    render() {
         return `
         <div class="about-container">
             <div class="about-header">
@@ -466,6 +516,5 @@ const AboutPage = {
         button.setAttribute('title', title);
     }
 };
-
 // 导出关于页面模块
 window.AboutPage = AboutPage;
