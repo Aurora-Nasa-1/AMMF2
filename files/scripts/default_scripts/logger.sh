@@ -7,7 +7,7 @@
 # ============================
 LOGGER_VERSION="2.2.1"
 LOGGER_INITIALIZED=0
-LOG_FILE_NAME="system"
+LOG_FILE_NAME="main"
 LOGMONITOR_PID=""
 LOGMONITOR_BIN="${MODPATH}/bin/logmonitor-AMMF"
 LOG_LEVEL=3  # 1=ERROR, 2=WARN, 3=INFO, 4=DEBUG
