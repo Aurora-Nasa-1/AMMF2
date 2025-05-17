@@ -10,9 +10,6 @@
     flex-direction: column;
     position: relative;
 }
-.controls-row {
-    padding: 10px;
-}
 .logs-scroll-container {
     overflow-y: auto;
     height: 100%;
