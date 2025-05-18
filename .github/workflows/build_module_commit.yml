@@ -2,7 +2,7 @@ name: Commit Build module
 
 on:
   push:
-    branches: [main] # 根据实际情况替换分支名
+    branches: [main]
 
 jobs:
   compress:
