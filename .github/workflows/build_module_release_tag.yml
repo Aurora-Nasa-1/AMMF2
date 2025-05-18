@@ -63,6 +63,7 @@ jobs:
           find files -name "*.sh" -exec sed -i "s/AMMF/${action_id}/g" {} \;
           find webroot -name "*.js" -exec sed -i "s/AMMF/${action_id}/g" {} \;
           find src -name "*.cpp" -exec sed -i "s/AMMF2/${action_id}/g" {} \;
+          find files -name "*.json" -exec sed -i "s/AMMF/${action_name}/g" {} \;
           sed -i "s/AMMF/${action_id}/g" webroot/index.html
           echo "已完成模块ID替换"
           
