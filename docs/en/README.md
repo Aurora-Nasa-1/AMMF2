@@ -44,29 +44,13 @@ cd AMMF2
 
 **Note: This framework requires GitHub Action for module building**
 
-1. **Edit Module Information (for building module.prop)**:
-   Modify basic information in `module_settings/config.sh`:
+1. **How to create a new module**:
+  [Module Development Guide](module_development.md)
 
-   ```bash
-   action_id="your_module_id"           # Module ID
-   action_name="Your Module Name"       # Module Name
-   action_author="Your Name"            # Author Name
-   action_description="Description"     # Module Description
-   ```
-
-2. **Environment Requirements**:
-   Set module environment requirements in `module_settings/config.sh`:
-
-   ```bash
-   magisk_min_version="25400"          # Minimum Magisk version
-   ksu_min_version="11300"             # Minimum KernelSU version
-   ANDROID_API="26"                    # Minimum Android API level
-   ```
-
-3. **Release Upload Configuration**:
+2. **Release Upload Configuration**:
    Action uses `softprops/action-gh-release@v2` to upload Release, needs to be configured in repository settings
 
-4. **Commit or create Tag(v*) to trigger build, Enjoy**
+3. **Commit or create Tag(v*) to trigger build, Enjoy**
 
 ### Build Module
 

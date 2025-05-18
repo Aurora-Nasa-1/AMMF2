@@ -29,6 +29,7 @@ export default {
           text: '开发指南',
           collapsible: true,
           items: [
+            { text: '模块开发指南', link: '/module_development' },
             { text: '脚本指南', link: '/script' },
             { text: 'WebUI 指南', link: '/webui' },
             { text: 'WebUI页面开发指南', link: '/webui-develop' },
@@ -46,6 +47,7 @@ export default {
         {
           text: 'Development Guide',
           items: [
+            { text: 'Module Development Guide', link: '/en/module_development' },
             { text: 'Script Guide', link: '/en/script' },
             { text: 'WebUI Guide', link: '/en/webui' },
             { text: 'WebUI Page Development Guide', link: '/en/webui-develop' },

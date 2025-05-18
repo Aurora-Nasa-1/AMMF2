@@ -41,24 +41,8 @@ cd AMMF2
 
 ### 基本配置
 
-1. **编辑模块信息(为构建 module.prop 使用)**：
-   修改 `module_settings/config.sh` 文件中的基本信息：
-
-   ```bash
-   action_id="your_module_id"           # 模块ID
-   action_name="Your Module Name"       # 模块名称
-   action_author="Your Name"            # 作者名称
-   action_description="Description"     # 模块描述
-   ```
-
-2. **配置环境要求**：
-   在 `module_settings/config.sh` 中设置模块的环境要求：
-
-   ```bash
-   magisk_min_version="25400"          # 最低Magisk版本
-   ksu_min_version="11300"             # 最低KernelSU版本
-   ANDROID_API="26"                    # 最低Android API级别
-   ```
+1. **如何开发模块**：
+  [模块开发指南](module_development.md)
 
 3. **配置 Release 上传**：
    Action 使用`softprops/action-gh-release@v2`上传 Release，需要在仓库设置中配置
