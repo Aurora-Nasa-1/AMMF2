@@ -24,7 +24,7 @@ AMMF2-overlay is a rapid module development tool based on the AMMF2 framework th
 ### 1. Clone the Overlay Repository
 
 ```bash
-git clone https://github.com/your-username/AMMF2-overlay.git
+git clone https://github.com/Aurora-Nasa-1/AMMF2-overlay.git
 cd AMMF2-overlay
 ```
 

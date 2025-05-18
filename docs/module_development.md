@@ -24,7 +24,7 @@ AMMF2-overlay是一个基于AMMF2框架的快速模块开发工具，它简化�
 ### 1. 克隆overlay仓库
 
 ```bash
-git clone https://github.com/your-username/AMMF2-overlay.git
+git clone https://github.com/Aurora-Nasa-1/AMMF2-overlay.git
 cd AMMF2-overlay
 ```
 
