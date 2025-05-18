@@ -21,9 +21,8 @@ export default {
           text: '快速开始',
           collapsible: true,  // 添加可折叠选项
           items: [
-            { text: '项目概述', link: '/README' },  // 改为指向README
+            { text: '项目概述以及构建指南', link: '/README' },  // 改为指向README
             { text: '目录结构', link: '/directory' },
-            { text: '文档界面本地构建说明', link: '/local-build-guide' },
           ]
         },
         {
@@ -32,6 +31,7 @@ export default {
           items: [
             { text: '脚本指南', link: '/script' },
             { text: 'WebUI 指南', link: '/webui' },
+            { text: 'WebUI页面开发指南', link: '/webui-develop' },
           ]
         }
       ],
@@ -39,9 +39,8 @@ export default {
         {
           text: 'Quick Start',
           items: [
-            { text: 'Overview', link: '/en/README' },
+            { text: 'Overview and Build Guide', link: '/en/README' },
             { text: 'Directory Structure', link: '/en/directory' },
-            { text: 'Docs Local Build Guide', link: '/en/local-build-guide' },
           ]
         },
         {
@@ -49,6 +48,7 @@ export default {
           items: [
             { text: 'Script Guide', link: '/en/script' },
             { text: 'WebUI Guide', link: '/en/webui' },
+            { text: 'WebUI Page Development Guide', link: '/en/webui-develop' },
           ]
         }
       ]
