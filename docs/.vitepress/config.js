@@ -32,7 +32,7 @@ export default {
             { text: '模块开发指南', link: '/module_development' },
             { text: '脚本指南', link: '/script' },
             { text: 'WebUI 指南', link: '/webui' },
-            { text: 'WebUI页面开发指南', link: '/webui-develop' },
+            { text: 'WebUI 页面开发指南', link: '/webui-develop' },
           ]
         }
       ],
