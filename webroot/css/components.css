@@ -8,7 +8,7 @@
 /* ===== 错误容器 ===== */
 .error-container {
     padding: var(--spacing-xl);
-    border-radius: var(--border-radius-s);
+    border-radius: var(--border-radius-l);
     background-color: var(--error-container);
     color: var(--on-error-container);
     margin: var(--spacing-l) 0;
@@ -54,7 +54,7 @@
 
 .language-selector-content {
     background-color: var(--surface-container);
-    border-radius: calc(var(--border-radius-l) + 4px);
+    border-radius: calc(var(--border-radius-xl) + 4px);
     width: min(90%, 560px);
     max-height: 80vh;
     overflow: hidden;
@@ -113,13 +113,13 @@
     line-height: 1;
     font: var(--label-l);
     padding: 10px var(--spacing-xl);
-    border-radius: var(--border-radius-m);
+    border-radius: var(--border-radius-xl);
     background-color: var(--primary);
     color: var(--on-primary);
     border: none;
     cursor: pointer;
     transition: background-color var(--tra);
-    min-width: 80px;
+    min-width: 90px;
 }
 
 #cancel-language:hover {
@@ -219,10 +219,9 @@
     }
 }
 
-
 .toast {
     padding: var(--spacing-m) var(--spacing-l);
-    border-radius: var(--border-radius-m);
+    border-radius: var(--border-radius-l);
     background-color: var(--surface-container-high);
     color: var(--on-surface);
     font: var(--body-m);

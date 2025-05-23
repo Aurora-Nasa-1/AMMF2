@@ -16,9 +16,10 @@
   --header-height: 58px;
   --nav-height: 83px;
   --icon-size: 40px;
-  --border-radius-l: 24px;
-  --border-radius-m: 20px;
-  --border-radius-s: 16px;
+  --border-radius-xl: 20px;
+  --border-radius-l: 16px;
+  --border-radius-m: 14px;
+  --border-radius-s: 12px;
   --scrollbar-width: 6px;
   
   /* 标准间距变量 */
@@ -61,7 +62,7 @@
   --color: var(--on-surface);
   width: var(--icon-size);
   height: var(--icon-size);
-  border-radius: var(--border-radius-m);
+  border-radius: var(--border-radius-xl);
   border: none;
   background-color: transparent;
   color: var(--color);
@@ -218,7 +219,7 @@
 .nav-item .material-symbols-rounded {
   font-size: 25px;
   padding: 3px 18px;
-  border-radius: var(--border-radius-m);
+  border-radius: var(--border-radius-xl);
   transition: all var(--tra), padding 200ms cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -354,7 +355,7 @@ html, body, #main-content, .language-options, .app-nav {
   .nav-content .icon-button {
     width: var(--icon-size);
     height: var(--icon-size);
-    border-radius: var(--border-radius-m);
+    border-radius: var(--border-radius-l);
   }
 
   .nav-content ul {
@@ -375,7 +376,7 @@ html, body, #main-content, .language-options, .app-nav {
     gap: 8px;
     align-items: center;
     background-color: var(--surface-container-low);
-    border-radius: var(--border-radius-s);
+    border-radius: var(--border-radius-xl);
     width: 56px;
     min-height: 144px;
     overflow-y: auto;
