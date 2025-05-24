@@ -1,67 +1,93 @@
 /**
  * AMMF WebUI 关于页面样式
- * 基于MD3设计系统优化
+ * 符合Material Design 3设计
  */
 
  .about-container {
-    display: flex;
-    flex-direction: column;
-    padding: var(--spacing-l);
     max-width: 800px;
     margin: 0 auto;
+    padding: var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
     gap: var(--spacing-xl);
 }
 
+/* 头部区域 */
 .about-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     text-align: center;
-    padding: var(--spacing-xxl) 0;
+    padding: var(--spacing-xl) 0;
+}
+
+/* 强制居中样式 */
+.about-header-content {
+    text-align: center !important;
+    display: block;
+    width: 100%;
+}
+
+.about-header-content h2 {
+    text-align: center !important;
+    margin: 0 auto;
+}
+
+.about-header-content .about-description {
+    text-align: center !important;
+    margin: 0 auto;
+    max-width: 500px;
+}
+
+.about-header-content .version-badge {
+    display: inline-block;
+    margin: 0 auto var(--spacing-m);
 }
 
 .app-logo {
-    width: 80px;
-    height: 80px;
-    border-radius: var(--border-radius-l);
+    width: 72px;
+    height: 72px;
+    margin: 0 auto var(--spacing-l);
     background-color: var(--primary);
+    border-radius: var(--border-radius-l);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: var(--spacing-l);
 }
 
 .app-logo .material-symbols-rounded {
-    font-size: 48px;
+    font-size: 40px;
     color: var(--on-primary);
 }
 
 .about-header h2 {
     font: var(--headline-l);
-    margin: var(--spacing-s) 0;
     color: var(--on-surface);
+    margin: 0 0 var(--spacing-s);
 }
 
 .version-badge {
+    display: inline-block;
     background-color: var(--secondary-container);
     color: var(--on-secondary-container);
     padding: var(--spacing-xs) var(--spacing-l);
-    border-radius: var(--border-radius-l);
-    font: var(--label-l);
-    margin: var(--spacing-s) 0;
+    border-radius: var(--border-radius-xl);
+    font: var(--label-m);
+    margin-bottom: var(--spacing-m);
 }
 
 .about-description {
     color: var(--on-surface-variant);
-    margin: var(--spacing-m) 0 0;
-    font: var(--body-m);
-    max-width: 400px;
+    font: var(--body-l);
+    margin: 0;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
+/* 内容卡片 */
 .about-card {
     background-color: var(--surface-container-low);
     border-radius: var(--border-radius-l);
     overflow: hidden;
+
 }
 
 .about-section {
@@ -84,8 +110,10 @@
 
 .section-title .material-symbols-rounded {
     color: var(--primary);
+    font-size: 24px;
 }
 
+/* 信息列表 */
 .info-list {
     display: flex;
     flex-direction: column;
@@ -99,10 +127,10 @@
 }
 
 .info-icon {
-    width: var(--icon-size);
-    height: var(--icon-size);
-    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     background-color: var(--secondary-container);
+    border-radius: var(--border-radius-m);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -110,7 +138,7 @@
 }
 
 .info-icon .material-symbols-rounded {
-    font-size: var(--icon-size-m);
+    font-size: 20px;
     color: var(--on-secondary-container);
 }
 
@@ -129,14 +157,15 @@
     color: var(--on-surface);
 }
 
+/* 开发者信息 */
 .developer-info {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-l);
+    gap: var(--spacing-m);
 }
 
 .developer-name {
-    font: var(--title-m);
+    font: var(--title-s);
     color: var(--on-surface);
 }
 
@@ -147,11 +176,11 @@
     padding: var(--spacing-s) var(--spacing-l);
     background-color: var(--secondary-container);
     color: var(--on-secondary-container);
-    border-radius: var(--border-radius-l);
+    border-radius: var(--border-radius-xl);
     text-decoration: none;
-    font: var(--label-l);
+    font: var(--label-m);
     width: fit-content;
-    transition: all var(--tra);
+    transition: background-color var(--tra);
 }
 
 .social-link:hover {
@@ -159,21 +188,38 @@
     color: var(--on-primary-container);
 }
 
+.social-link .material-symbols-rounded {
+    font-size: 18px;
+}
+
+/* 页脚 */
 .about-footer {
     text-align: center;
     color: var(--on-surface-variant);
     font: var(--body-s);
-    padding: var(--spacing-s) 0 var(--spacing-xxl);
+    padding: var(--spacing-l) 0;
+    margin-top: var(--spacing-l);
 }
 
-/* 颜色选择器样式 */
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    color: var(--on-surface-variant);
+    font: var(--body-m);
+    padding: var(--spacing-xl);
+    background-color: var(--surface-container-lowest);
+    border-radius: var(--border-radius-m);
+    border: 1px dashed var(--outline-variant);
+}
+
+/* 颜色选择器 - 简化版 */
 .color-picker-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: oklch(0 0 0 / .4);
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -185,212 +231,138 @@
     border-radius: var(--border-radius-l);
     width: min(90%, 400px);
     overflow: hidden;
-    margin: var(--spacing-xl);
 }
 
 .color-picker-content {
-    padding: var(--spacing-xl);
+    padding: var(--spacing-l);
 }
 
 .preset-colors {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
     gap: var(--spacing-s);
     margin-bottom: var(--spacing-l);
-    justify-content: center;
-    flex-wrap: wrap;
 }
 
 .preset-color {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--border-radius-xl);
     cursor: pointer;
-    overflow: hidden;
-    border: 2px solid var(--outline);
-    transition: transform var(--tra);
+    border: 2px solid var(--outline-variant);
+    transition: transform 0.2s ease;
 }
 
 .preset-color:hover {
     transform: scale(1.1);
+    border-color: var(--primary);
 }
 
 .color-preview {
     width: 100%;
     height: 100%;
     background-color: hsl(var(--preview-hue) 100% 60%);
+    border-radius: inherit;
 }
 
-.hue-slider-container {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-l);
-    margin-top: var(--spacing-s);
-}
-
-.hue-slider-container input[type="range"] {
-    flex: 1;
-    height: var(--icon-size);
-    border-radius: var(--border-radius-l);
-    background: linear-gradient(to right,
-        hsl(0, 100%, 50%),
-        hsl(60, 100%, 50%),
-        hsl(120, 100%, 50%),
-        hsl(180, 100%, 50%),
-        hsl(240, 100%, 50%),
-        hsl(300, 100%, 50%),
-        hsl(360, 100%, 50%)
-    );
-}
-
-.hue-preview {
-    width: var(--icon-size);
-    height: var(--icon-size);
-    border-radius: 50%;
-    background-color: hsl(var(--preview-hue), 100%, 50%);
-    border: 2px solid var(--outline);
-    transition: background-color var(--tra);
-}
-
-#hue-value {
-    min-width: 48px;
-    text-align: center;
-    font: var(--label-l);
+.color-picker-content label {
+    display: block;
+    font: var(--label-m);
     color: var(--on-surface);
+    margin-bottom: var(--spacing-s);
 }
 
-/* 响应式布局调整 */
+.color-picker-content input[type="color"] {
+    width: 100%;
+    padding: var(--spacing-s);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--border-radius-xl);
+    font: var(--body-m);
+    color: var(--on-surface);
+    background-color: var(--surface-container);
+    outline: none;
+}
+.dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-s);
+    padding: var(--spacing-l);
+    border-top: 1px solid var(--outline-variant);
+}
+
+.dialog-button {
+    padding: var(--spacing-s) var(--spacing-l);
+    border: 1px solid var(--outline);
+    border-radius: var(--border-radius-xl);
+    background-color: transparent;
+    color: var(--primary);
+    font: var(--label-m);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dialog-button:hover {
+    background-color: var(--primary-container);
+    color: var(--on-primary-container);
+}
+
+.dialog-button.filled {
+    background-color: var(--primary);
+    color: var(--on-primary);
+    border-color: var(--primary);
+}
+
+.dialog-button.filled:hover {
+    background-color: var(--primary-dark);
+}
+
+/* 响应式设计 */
 @media (min-width: 768px) {
     .about-container {
-        padding: var(--spacing-xxl);
-        gap: var(--spacing-xxl);
-        max-width: 1200px;
-        min-height: calc(100vh - var(--header-height));
-        justify-content: center;
+        padding: var(--spacing-xl);
+        max-width: 1000px;
     }
 
     .about-header {
-        padding: var(--spacing-xxl) 0;
-        flex-direction: row;
-        justify-content: center;
-        gap: var(--spacing-xxl);
-        text-align: left;
+        display: flex;
         align-items: center;
+        text-align: left;
+        gap: var(--spacing-xl);
     }
 
     .app-logo {
-        margin-bottom: 0;
-    }
-    
-    .about-header-content {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--spacing-l);
-        justify-content: center;
+        margin: 0;
+        width: 80px;
+        height: 80px;
     }
 
-    .about-header h2 {
-        margin: 0;
-        line-height: 1.2;
+    .app-logo .material-symbols-rounded {
+        font-size: 48px;
     }
-    
+
+    .about-header-content {
+        flex: 1;
+    }
+
     .about-description {
-        max-width: 600px;
-        text-align: left;
         margin: 0;
+        max-width: none;
     }
 
     .about-card {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 1px;
         background-color: var(--outline-variant);
-        margin-top: var(--spacing-l);
     }
 
     .about-section {
         background-color: var(--surface-container-low);
         border: none;
-        padding: var(--spacing-xxl);
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-xl);
-    }
-
-    .info-list {
-        gap: var(--spacing-xl);
-    }
-
-    .info-item {
-        gap: var(--spacing-xl);
-    }
-
-    .section-title {
-        margin: 0;
     }
 }
 
-/* 低高度屏幕优化 */
-@media (min-width: 768px) and (max-height: 700px) {
-    .about-container {
-        padding: var(--spacing-xl);
-        gap: var(--spacing-xl);
-    }
-
-    .about-header {
-        padding: var(--spacing-l) 0;
-        gap: var(--spacing-xxl);
-        align-items: center;
-    }
-
-    .app-logo {
-        width: 64px;
-        height: 64px;
-        margin-top: 0;
-        margin-bottom: 0;
-    }
-
-    .app-logo .material-symbols-rounded {
-        font-size: 36px;
-    }
-
-    .about-header h2 {
-        font: var(--headline-m);
-        margin: 0;
-        line-height: 1.2;
-    }
-    
-    .about-header-content {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: flex-start;
-    }
-
-    .version-badge {
-        margin: var(--spacing-xs) 0;
-    }
-
-    .about-section {
-        padding: var(--spacing-xl);
-        gap: var(--spacing-l);
-    }
-
-    .info-list {
-        gap: var(--spacing-l);
-    }
-
-    .info-item {
-        gap: var(--spacing-l);
-    }
-}
-
-/* 超宽屏幕优化 */
-@media (min-width: 1440px) {
-    .about-container {
-        max-width: 1400px;
-    }
-
+@media (min-width: 1200px) {
     .about-card {
         grid-template-columns: repeat(3, 1fr);
     }

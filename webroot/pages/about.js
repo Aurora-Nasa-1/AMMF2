@@ -6,7 +6,7 @@
 const AboutPage = {
     // 模块信息
     moduleInfo: {},
-    version: '8.0.0',
+    version: '8.0.1',
     // 配置项
     config: {
         showThemeToggle: false  // 控制是否显示主题切换按钮
@@ -117,11 +117,13 @@ const AboutPage = {
                 <div class="app-logo">
                     <span class="material-symbols-rounded">dashboard_customize</span>
                 </div>
-                <h2>AMMF WebUI</h2>
-                <div class="version-badge">
-                    <span>${I18n.translate('VERSION', '版本')} ${this.version}</span>
+                <div class="about-header-content">
+                    <h2>AMMF WebUI</h2>
+                    <div class="version-badge">
+                        ${I18n.translate('VERSION', '版本')} ${this.version}
+                    </div>
+                    <p class="about-description">${I18n.translate('ABOUT_DESCRIPTION', 'AMMF模块管理界面')}</p>
                 </div>
-                <p class="about-description">${I18n.translate('ABOUT_DESCRIPTION', 'AMMF模块管理界面')}</p>
             </div>
             
             <div class="about-card">
@@ -142,7 +144,7 @@ const AboutPage = {
                     </h3>
                     <div class="developer-info">
                         <div class="developer-name">
-                            <span>${this.moduleInfo.author || I18n.translate('UNKNOWN', '未知')}</span>
+                            ${this.moduleInfo.author || I18n.translate('UNKNOWN', '未知')}
                         </div>
                         ${this.moduleInfo.github ? `
                         <a href="#" class="social-link" id="module-github-link">
@@ -155,12 +157,12 @@ const AboutPage = {
                 
                 <div class="about-section">
                     <h3 class="section-title">
-                        <span class="material-symbols-rounded">person</span>
+                        <span class="material-symbols-rounded">engineering</span>
                         ${I18n.translate('FRAMEWORK_DEVELOPER', '框架开发者')}
                     </h3>
                     <div class="developer-info">
                         <div class="developer-name">
-                            <span>AuroraNasa</span>
+                            AuroraNasa
                         </div>
                         <a href="#" class="social-link" id="github-link">
                             <span class="material-symbols-rounded">code</span>
