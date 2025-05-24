@@ -10,7 +10,7 @@ const StatusPage = {
     deviceInfo: {},
 
     // 版本信息
-    currentVersion: '20240530',
+    currentVersion: '20240503',
     GitHubRepo: 'Aurora-Nasa-1/AMMF',
     latestVersion: null,
     updateAvailable: false,
