@@ -56,6 +56,7 @@ jobs:
       - name: Replace module ID in files
         run: |
           LATEST_TAG=$(cat latest_tag.txt)
+          CURRENT_TIME=$(cat current_time.txt)
           . ./module_settings/config.sh
           # 替换文件中的模块ID
           sed -i "s/20240503/${CURRENT_TIME}/g" webroot/pages/status.js
