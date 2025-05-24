@@ -471,12 +471,13 @@ main() {
         echo "updateJson=${updateJson}"
     } >module.prop
 
-    # 替换标识符
-    find webroot -name "*.js" -exec sed -i "s/v114514/${version}/g" {} \;
+    sed -i "s/20240503/${CURRENT_TIME}/g" webroot/pages/status.js
     find webroot -name "status.js" -exec sed -i "s/Aurora-Nasa-1\/AMMF/${Github_update_repo}/g" {} \;
-    find files webroot -type f -name "*.sh" -o -name "*.js" -exec sed -i "s/AMMF/${action_id}/g" {} +
-    find src -name "*.cpp" -exec sed -i "s/AMMF2/${action_id}/g" {} +
+    find files -name "*.sh" -exec sed -i "s/AMMF/${action_id}/g" {} \;
+    find webroot -name "*.js" -exec sed -i "s/AMMF/${action_id}/g" {} \;
+    find src -name "*.cpp" -exec sed -i "s/AMMF2/${action_id}/g" {} \;
     sed -i "s/AMMF/${action_id}/g" webroot/index.html
+    find webroot/translations -name "*.json" -exec sed -i "s/AMMF/${action_name}/g" {} \;
     # 在 main 函数中，替换标识符部分添加
     compile_binaries
     rm -rf src

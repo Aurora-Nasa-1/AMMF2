@@ -43,15 +43,16 @@ jobs:
       - name: Replace module ID in files
         run: |
           LATEST_TAG=$(cat latest_tag.txt)
+          CURRENT_TIME=$(cat current_time.txt)
           . ./module_settings/config.sh
           # 替换文件中的模块ID
-                    find webroot -name "*.js" -exec sed -i "s/v114514/${LATEST_TAG}/g" {} \;
+          sed -i "s/20240503/${CURRENT_TIME}/g" webroot/pages/status.js
           find webroot -name "status.js" -exec sed -i "s/Aurora-Nasa-1\/AMMF/${Github_update_repo}/g" {} \;
           find files -name "*.sh" -exec sed -i "s/AMMF/${action_id}/g" {} \;
           find webroot -name "*.js" -exec sed -i "s/AMMF/${action_id}/g" {} \;
           find src -name "*.cpp" -exec sed -i "s/AMMF2/${action_id}/g" {} \;
           sed -i "s/AMMF/${action_id}/g" webroot/index.html
-          find files -name "*.json" -exec sed -i "s/AMMF/${action_name}/g" {} \;
+          find webroot/translations -name "*.json" -exec sed -i "s/AMMF/${action_name}/g" {} \;
           echo "已完成模块ID替换"
 
       - name: Set short SHA
