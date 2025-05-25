@@ -106,7 +106,7 @@ const StatusPage = {
                             </div>
                         </div>
                     </div>
-                    <button class="update-button md3-button" onclick="window.open('https://github.com/${this.GitHubRepo}/releases/latest', '_blank')">
+                    <button class="update-button md3-button" onclick="app.OpenUrl('https://github.com/${this.GitHubRepo}/releases/latest', '_blank')">
                         <span class="material-symbols-rounded">open_in_new</span>
                         <span>${I18n.translate('VIEW_UPDATE', '查看更新')}</span>
                     </button>

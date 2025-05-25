@@ -478,7 +478,7 @@ const AboutPage = {
             }
             
             // 使用安卓浏览器打开链接
-            await Core.execCommand(`am start -a android.intent.action.VIEW -d "${githubUrl}"`);
+            app.OpenUrl(githubUrl);
             console.log('已打开GitHub链接:', githubUrl);
         } catch (error) {
             console.error('打开GitHub链接失败:', error);

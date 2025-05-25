@@ -297,6 +297,9 @@ class App {
 
         requestAnimationFrame(processBatch);
     }
+    OpenUrl(url) {
+        Core.execCommand(`am start -a android.intent.action.VIEW -d "${url}"`);
+    }
 }
 class PreloadManager {
     static dataCache = new Map();
