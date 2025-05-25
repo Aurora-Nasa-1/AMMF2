@@ -197,7 +197,7 @@ const StatusPage = {
             this.registerActions();
 
             // 注册语言切换处理器
-            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+            I18n.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
 
             // 获取预加载的数据
             const preloadedData = PreloadManager.getData('status');
@@ -552,39 +552,68 @@ const StatusPage = {
 
     async getRootImplementation() {
         try {
-            // 检查Magisk是否安装
-            const magiskPath = '/data/adb/magisk';
-            const magiskExists = await Core.execCommand(`[ -f "${magiskPath}" ] && echo "true" || echo "false"`);
+            let rootInfo = [];
 
-            if (magiskExists.trim() === "true") {
-                const version = await Core.execCommand(`cat "${magiskPath}"`);
-                if (version && version.trim()) {
-                    return `Magisk ${version.trim()}`;
+            // 检查Magisk
+            try {
+                // 检查多个可能的Magisk路径
+                const magiskPaths = [
+                    '/data/adb/magisk',
+                    '/data/adb/magisk.db',
+                    '/data/adb/magisk.img'
+                ];
+                
+                for (const path of magiskPaths) {
+                    const exists = await Core.execCommand(`[ -e "${path}" ] && echo "true" || echo "false"`);
+                    if (exists.trim() === "true") {
+                        // 尝试获取Magisk版本
+                        const magiskResult = await Core.execCommand('magisk -v');
+                        if (magiskResult && !magiskResult.includes('not found')) {
+                            const version = magiskResult.trim().split(':')[0];
+                            if (version) {
+                                rootInfo.push(`Magisk ${version}`);
+                                break;
+                            }
+                        }
+                    }
                 }
+            } catch (error) {
+                console.debug('Magisk检测失败:', error);
             }
 
-            // 尝试通过magisk命令获取版本
-            const magiskResult = await Core.execCommand('magisk -v');
-            if (magiskResult && !magiskResult.includes('not found')) {
-                const magiskVersion = magiskResult.trim().split(':')[0];
-                if (magiskVersion) {
-                    return `Magisk ${magiskVersion}`;
+            // 检查KernelSU
+            try {
+                const ksuResult = await Core.execCommand('ksu -V || ksud -V');
+                if (ksuResult && !ksuResult.includes('not found')) {
+                    rootInfo.push(`KernelSU ${ksuResult.trim()}`);
                 }
+            } catch (error) {
+                console.debug('KernelSU检测失败:', error);
             }
 
-            // 检查KernelSU是否安装
-            const ksuResult = await Core.execCommand('ksud -V');
-            if (ksuResult && !ksuResult.includes('not found')) {
-                return `KernelSU ${ksuResult.trim()}`;
+            // 检查APatch
+            try {
+                const apatchResult = await Core.execCommand('apd -V');
+                if (apatchResult && !apatchResult.includes('not found')) {
+                    rootInfo.push(`APatch ${apatchResult.trim()}`);
+                }
+            } catch (error) {
+                console.debug('APatch检测失败:', error);
             }
 
-            // 检查APatch是否安装
-            const apatchResult = await Core.execCommand('apd -V');
-            if (apatchResult && !apatchResult.includes('not found')) {
-                return `APatch ${apatchResult.trim()}`;
+            // 通用root检测
+            try {
+                const suResult = await Core.execCommand('which su || command -v su');
+                if (suResult && !suResult.includes('not found')) {
+                    if (!rootInfo.length) {
+                        rootInfo.push('Root (Unknown)');
+                    }
+                }
+            } catch (error) {
+                console.debug('通用root检测失败:', error);
             }
 
-            return 'No Root';
+            return rootInfo.length ? rootInfo.join(' + ') : 'No Root';
         } catch (error) {
             console.error('获取ROOT实现失败:', error);
             return 'Unknown';
@@ -708,7 +737,7 @@ const StatusPage = {
     // 修改 onDeactivate 方法
     onDeactivate() {
         // 注销语言切换处理器
-        app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        I18n.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
         // 停止自动刷新
         if (this.refreshTimer) {
             clearInterval(this.refreshTimer);

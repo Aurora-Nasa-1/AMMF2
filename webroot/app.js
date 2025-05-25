@@ -10,36 +10,23 @@ class App {
             isLoading: true,
             currentPage: null,
             themeChanging: false,
-            headerTransparent: true,
-            languageChangeHandlers: new Set()  // 添加语言切换处理器集合
+            headerTransparent: true
         };
     }
-    registerLanguageChangeHandler(handler) {
-        this.state.languageChangeHandlers.add(handler);
+    // 防抖
+    debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
     }
-
-    // 添加语言切换事件处理注销方法
-    unregisterLanguageChangeHandler(handler) {
-        this.state.languageChangeHandlers.delete(handler);
-    }
+    
     // 初始化应用
     async init() {
         await I18n.init();
         ThemeManager.init();
-        document.addEventListener('languageChanged', () => {
-            // Notify all registered handlers
-            this.state.languageChangeHandlers.forEach(handler => {
-                try {
-                    handler();
-                } catch (error) {
-                    console.error('Language change handler failed:', error);
-                }
-            });
-            // Update page title after language change
-            if (this.state.currentPage) {
-                UI.updatePageTitle(this.state.currentPage);
-            }
-        });
+        
         // Initialize CSS loader
         if (window.CSSLoader) {
             CSSLoader.init();
@@ -70,8 +57,11 @@ class App {
 
         // 使用 Promise.resolve().then 确保在下一个微任务中执行预加载
         Promise.resolve().then(() => {
-            // 预加载其他页面
-            Router.preloadPages();
+            // 预加载其他页面，只执行一次
+            if (!this._pagesPreloaded) {
+                Router.preloadPages();
+                this._pagesPreloaded = true;
+            }
         });
 
         // 更新加载状态
@@ -83,9 +73,6 @@ class App {
             loadingContainer.style.opacity = '0';
             setTimeout(() => loadingContainer.remove(), 300);
         }
-
-        // 预加载其他页面
-        Router.preloadPages();
     }
 
     // 执行命令

@@ -56,7 +56,7 @@ const AboutPage = {
             this.moduleInfo = preloadedData;
             
             // 注册语言切换处理器
-            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+            I18n.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
             
             return true;
         } catch (error) {
@@ -77,7 +77,7 @@ const AboutPage = {
     // 添加清理方法
     onDeactivate() {
         // 注销语言切换处理器
-        app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        I18n.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
         // 清理页面操作按钮
         UI.clearPageActions();
     },

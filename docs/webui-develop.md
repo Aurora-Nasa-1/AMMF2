@@ -88,7 +88,7 @@ const DashboardPage = {
             this.registerActions();
             const preloadedData = PreloadManager.getData('dashboard') || await this.preloadData();
             this.status = preloadedData.status || {};
-            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+            I18n.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
             return true;
         } catch (error) {
             console.error('初始化仪表盘页面失败:', error);
@@ -184,7 +184,7 @@ const DashboardPage = {
 
     // 页面停用
     onDeactivate() {
-        app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        I18n.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
         UI.clearPageActions('dashboard');
     }
 };
@@ -202,7 +202,7 @@ window.DashboardPage = DashboardPage;
 - **使用 `init` 方法**：初始化页面模块，加载数据并注册事件。参考 `SettingsPage.init` 和 `AboutPage.init`：
   - 调用 `registerActions` 注册操作按钮。
   - 使用 `PreloadManager.getData` 获取预加载数据，或调用 `preloadData` 加载数据。
-  - 注册语言切换处理器 `app.registerLanguageChangeHandler`。
+  - 注册语言切换处理器 `I18n.registerLanguageChangeHandler`。
 - **异步操作**：使用 `async/await` 确保数据加载完成。
 - **错误处理**：捕获异常并记录日志，返回 `true`（成功）或 `false`（失败）。
 
@@ -212,7 +212,7 @@ async init() {
         this.registerActions();
         const preloadedData = PreloadManager.getData('dashboard') || await this.preloadData();
         this.status = Forthcoming data.status || {};
-        app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        I18n.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
         return true;
     } catch (error) {
         console.error('初始化仪表盘页面失败:', error);
@@ -314,7 +314,7 @@ onActivate() {
 }
 
 onDeactivate() {
-    app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+    I18n.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
     UI.clearPageActions('dashboard');
 }
 ```
@@ -431,7 +431,7 @@ const DashboardPage = {
             this.registerActions();
             const preloadedData = PreloadManager.getData('dashboard') || await this.preloadData();
             this.status = preloadedData.status || {};
-            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+            I18n.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
             return true;
         } catch (error) {
             console.error('初始化仪表盘页面失败:', error);
@@ -518,7 +518,7 @@ const DashboardPage = {
     onActivate() {},
 
     onDeactivate() {
-        app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        I18n.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
         UI.clearPageActions('dashboard');
     }
 };

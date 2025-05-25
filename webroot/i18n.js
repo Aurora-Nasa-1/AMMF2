@@ -11,6 +11,8 @@ const I18n = {
         en: {},
         ru: {}
     },
+    // 添加语言切换处理器集合
+    languageChangeHandlers: new Set(),
 
     async init() {
         try {
@@ -27,6 +29,27 @@ const I18n = {
             this.currentLang = 'zh';
             return false;
         }
+    },
+
+    // 从App类移植的方法：注册语言切换处理器
+    registerLanguageChangeHandler(handler) {
+        if (typeof handler === 'function') {
+            this.languageChangeHandlers.add(handler);
+        }
+    },
+
+    // 从App类移植的方法：注销语言切换处理器
+    unregisterLanguageChangeHandler(handler) {
+        this.languageChangeHandlers.delete(handler);
+    },
+
+    // 通用防抖函数
+    debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
     },
 
     async loadTranslations() {
@@ -134,24 +157,49 @@ const I18n = {
 
     translate(key, defaultText = '') {
         if (!key) return defaultText;
-        
+
         // 支持参数替换，例如：translate('HELLO', '你好 {name}', {name: '张三'})
         if (arguments.length > 2 && typeof arguments[2] === 'object') {
             let text = this.translations[this.currentLang][key] || defaultText || key;
             const params = arguments[2];
-            
+
             for (const param in params) {
                 if (Object.prototype.hasOwnProperty.call(params, param)) {
                     text = text.replace(new RegExp(`{${param}}`, 'g'), params[param]);
                 }
             }
-            
+
             return text;
         }
-        
+
         return this.translations[this.currentLang][key] || defaultText || key;
     },
 
+    // 优化后的关闭语言选择器方法
+    closeLanguageSelector() {
+        const selector = document.getElementById('language-selector');
+        if (!selector || selector.classList.contains('closing')) return;
+
+        // 添加关闭动画类
+        selector.classList.add('closing');
+        
+        // 获取选择器内容元素并添加关闭动画类
+        const content = selector.querySelector('.language-selector-content');
+        if (content) {
+            content.classList.add('closing');
+        }
+
+        // 使用单一setTimeout，等待动画完成后再移除类
+        setTimeout(() => {
+            selector.classList.remove('active');
+            selector.classList.remove('closing');
+            if (content) {
+                content.classList.remove('closing');
+            }
+        }, 200); // 与CSS动画时间匹配
+    },
+
+    // 优化后的语言选择器初始化方法
     initLanguageSelector() {
         const languageButton = document.getElementById('language-button');
         if (!languageButton) {
@@ -166,6 +214,18 @@ const I18n = {
             return;
         }
 
+        // 获取内容区域元素
+        const content = languageSelector.querySelector('.language-selector-content');
+        if (!content) {
+            console.error('找不到语言选择器内容区域');
+            return;
+        }
+
+        // 阻止内容区域的点击事件冒泡
+        content.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
         // 设置语言按钮点击事件
         languageButton.addEventListener('click', () => {
             // 使用UI类的方法显示覆盖层
@@ -178,24 +238,9 @@ const I18n = {
 
         // 添加点击遮罩关闭功能
         languageSelector.addEventListener('click', (event) => {
-            // 如果点击的是语言选择器容器本身（即遮罩层），而不是其子元素
-            if (event.target === languageSelector) {
-                if (window.UI && window.UI.hideOverlay) {
-                    window.UI.hideOverlay(languageSelector);
-                } else {
-                    languageSelector.classList.add('closing');
-                    setTimeout(() => {
-                        languageSelector.classList.add('closing');
-                        setTimeout(() => {
-                            languageSelector.classList.remove('active');
-                            languageSelector.classList.remove('closing');
-                            languageSelector.style.display = 'none';
-                            setTimeout(() => {
-                                languageSelector.style.display = '';
-                            }, 50);
-                        }, 200);
-                    }, 200);
-                }
+            // 确保点击的是遮罩层而不是内容区域或其子元素
+            if (event.target === languageSelector && !event.target.closest('.language-selector-content')) {
+                this.closeLanguageSelector();
             }
         });
 
@@ -203,25 +248,7 @@ const I18n = {
         const cancelButton = document.getElementById('cancel-language');
         if (cancelButton) {
             cancelButton.addEventListener('click', () => {
-                // 使用UI类的方法隐藏覆盖层
-                if (window.UI && window.UI.hideOverlay) {
-                    window.UI.hideOverlay(languageSelector);
-                } else {
-                    // 添加关闭动画类
-                    languageSelector.classList.add('closing');
-
-                    // 确保动画完成后移除所有相关类
-                    setTimeout(() => {
-                        languageSelector.classList.remove('active');
-                        languageSelector.classList.remove('closing');
-                        languageSelector.style.display = 'none'; // 强制隐藏
-
-                        // 重置后恢复正常显示设置，但保持隐藏状态
-                        setTimeout(() => {
-                            languageSelector.style.display = '';
-                        }, 50);
-                    }, 200); // 与CSS动画时间匹配
-                }
+                this.closeLanguageSelector();
             });
         }
 
@@ -232,14 +259,14 @@ const I18n = {
     updateLanguageSelector() {
         const languageOptions = document.getElementById('language-options');
         if (!languageOptions) return;
-        
+
         languageOptions.innerHTML = '';
-        
+
         this.supportedLangs.forEach(lang => {
             const option = document.createElement('div');
             option.className = `language-option ${lang === this.currentLang ? 'selected' : ''}`;
             option.setAttribute('data-lang', lang);
-            
+
             const radioInput = document.createElement('input');
             radioInput.type = 'radio';
             radioInput.name = 'language';
@@ -247,65 +274,80 @@ const I18n = {
             radioInput.value = lang;
             radioInput.checked = lang === this.currentLang;
             radioInput.className = 'md-radio';
-            
+
             const label = document.createElement('label');
             label.htmlFor = `lang-${lang}`;
             label.textContent = this.getLanguageDisplayName(lang);
-            
+
             option.appendChild(radioInput);
             option.appendChild(label);
-            
+
             option.addEventListener('click', async () => {
-                // 先关闭语言选择器，然后再切换语言
-                const languageSelector = document.getElementById('language-selector');
-                if (languageSelector) {
-                    // 使用UI类的方法隐藏覆盖层
-                    if (window.UI && window.UI.hideOverlay) {
-                        window.UI.hideOverlay(languageSelector);
-                    } else {
-                        // 添加关闭动画类
-                        languageSelector.classList.add('closing');
-                        
-                        // 确保动画完成后移除所有相关类
-                        setTimeout(() => {
-                            languageSelector.classList.remove('active');
-                            languageSelector.classList.remove('closing');
-                            languageSelector.style.display = 'none'; // 强制隐藏
-                            
-                            // 重置后恢复正常显示设置，但保持隐藏状态
-                            setTimeout(() => {
-                                languageSelector.style.display = '';
-                            }, 50);
-                        }, 200); // 与CSS动画时间匹配
-                    }
+                // 如果点击的是当前语言，只关闭选择器
+                if (lang === this.currentLang) {
+                    this.closeLanguageSelector();
+                    return;
                 }
-                
+
+                // 先关闭语言选择器，然后再切换语言
+                this.closeLanguageSelector();
+
                 // 切换语言
                 if (lang !== this.currentLang) {
-                    await this.setLanguage(lang);
+                await this.setLanguage(lang);
                     this.updateLanguageSelector();
                 }
             });
-            
+
             languageOptions.appendChild(option);
         });
     },
 
+    // 优化后的语言切换方法
     async setLanguage(lang) {
         if (!this.supportedLangs.includes(lang)) {
             console.warn(`不支持的语言: ${lang}`);
             return false;
         }
+
         if (this.currentLang === lang) {
             console.log(`已经是当前语言: ${lang}`);
             return true;
         }
+
         this.currentLang = lang;
         localStorage.setItem('currentLanguage', lang);
+
+        // 应用翻译
         this.applyTranslations();
-        document.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
+
+        // 触发语言变化事件
+        this.notifyLanguageChange(lang);
+
         console.log(`语言已切换为: ${lang}`);
         return true;
+    },
+
+    // 新增：通知所有语言变化处理器
+    notifyLanguageChange(lang) {
+        // 创建并分发自定义事件
+        document.dispatchEvent(new CustomEvent('languageChanged', {
+            detail: { language: lang }
+        }));
+
+        // 使用防抖函数通知所有注册的处理器
+        const debouncedNotify = this.debounce(() => {
+            // 通知所有注册的处理器
+            this.languageChangeHandlers.forEach(handler => {
+                try {
+                    handler(lang);
+                } catch (error) {
+                    console.error('Language change handler failed:', error);
+                }
+            });
+        }, 100);
+
+        debouncedNotify();
     },
 
     getLanguageDisplayName(lang) {
@@ -317,11 +359,17 @@ const I18n = {
         }
     },
 
+    // 优化后的DOM变化观察方法
     observeDOMChanges() {
+        // 使用防抖函数减少频繁调用
+        const debouncedApplyTranslations = this.debounce(() => {
+            this.applyTranslations();
+        }, 50);
+
         // 使用 MutationObserver 监听 DOM 变化
         const observer = new MutationObserver((mutations) => {
             let shouldApply = false;
-            
+
             // 检查是否有新增的需要翻译的元素
             for (const mutation of mutations) {
                 if (mutation.type === 'childList' && mutation.addedNodes.length) {
@@ -330,8 +378,8 @@ const I18n = {
                             // 检查新增元素或其子元素是否包含需要翻译的属性
                             if (
                                 node.hasAttribute && (
-                                    node.hasAttribute('data-i18n') || 
-                                    node.hasAttribute('data-i18n-placeholder') || 
+                                    node.hasAttribute('data-i18n') ||
+                                    node.hasAttribute('data-i18n-placeholder') ||
                                     node.hasAttribute('data-i18n-title') ||
                                     node.hasAttribute('data-i18n-label') ||
                                     node.querySelector('[data-i18n], [data-i18n-placeholder], [data-i18n-title], [data-i18n-label]')
@@ -343,35 +391,36 @@ const I18n = {
                         }
                     }
                 }
-                
+
                 if (shouldApply) break;
             }
-            
+
             // 如果有需要翻译的元素，应用翻译
             if (shouldApply) {
-                this.applyTranslations();
+                debouncedApplyTranslations();
             }
         });
-        
+
         // 配置观察选项
-        const config = { 
-            childList: true, 
-            subtree: true 
+        const config = {
+            childList: true,
+            subtree: true
         };
-        
+
         // 开始观察 document.body
         observer.observe(document.body, config);
-        
+
         // 监听页面变化事件
         document.addEventListener('pageChanged', () => {
             // 使用 requestAnimationFrame 确保在下一帧渲染前应用翻译
             requestAnimationFrame(() => this.applyTranslations());
         });
-        
-        // 监听语言变化事件
-        document.addEventListener('languageChanged', () => {
-            this.applyTranslations();
-        });
+    },
+
+    // 基础翻译（如果翻译文件加载失败时使用）
+    getBaseTranslations() {
+        return {
+        };
     }
 };
 

@@ -88,7 +88,7 @@ const DashboardPage = {
             this.registerActions();
             const preloadedData = PreloadManager.getData('dashboard') || await this.preloadData();
             this.status = preloadedData.status || {};
-            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+            I18n.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
             return true;
         } catch (error) {
             console.error('Failed to initialize dashboard page:', error);
@@ -184,7 +184,7 @@ const DashboardPage = {
 
     // Page deactivation
     onDeactivate() {
-        app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        I18n.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
         UI.clearPageActions('dashboard');
     }
 };
@@ -202,7 +202,7 @@ window.DashboardPage = DashboardPage;
 - **Use `init` Method**: Initialize the page module, load data, and register events. Reference `SettingsPage.init` and `AboutPage.init`:
   - Call `registerActions` to register action buttons.
   - Use `PreloadManager.getData` to retrieve preloaded data or call `preloadData` to load data.
-  - Register language change handler with `app.registerLanguageChangeHandler`.
+  - Register language change handler with `I18n.registerLanguageChangeHandler`.
 - **Asynchronous Operations**: Use `async/await` to ensure data loading completes.
 - **Error Handling**: Catch exceptions, log errors, and return `true` (success) or `false` (failure).
 
@@ -212,7 +212,7 @@ async init() {
         this.registerActions();
         const preloadedData = PreloadManager.getData('dashboard') || await this.preloadData();
         this.status = preloadedData.status || {};
-        app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        I18n.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
         return true;
     } catch (error) {
         console.error('Failed to initialize dashboard page:', error);
@@ -314,7 +314,7 @@ onActivate() {
 }
 
 onDeactivate() {
-    app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+    I18n.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
     UI.clearPageActions('dashboard');
 }
 ```
@@ -431,7 +431,7 @@ const DashboardPage = {
             this.registerActions();
             const preloadedData = PreloadManager.getData('dashboard') || await this.preloadData();
             this.status = preloadedData.status || {};
-            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+            I18n.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
             return true;
         } catch (error) {
             console.error('Failed to initialize dashboard page:', error);
@@ -518,7 +518,7 @@ const DashboardPage = {
     onActivate() {},
 
     onDeactivate() {
-        app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        I18n.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
         UI.clearPageActions('dashboard');
     }
 };

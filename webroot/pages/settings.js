@@ -40,7 +40,7 @@ const SettingsPage = {
             this.registerActions();
             
             // 注册语言切换处理器
-            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+            I18n.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
             
             // 如果有临时表单状态且有未保存的更改，优先使用临时状态
             if (this.tempFormState && Object.keys(this.tempFormState).length > 0 && this.hasUnsavedChanges) {
@@ -868,7 +868,7 @@ const SettingsPage = {
             Core.showToast(I18n.translate('UNSAVED_SETTINGS', '设置有未保存的更改'), 'warning');
         }
         // 注销语言切换处理器
-        app.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
+        I18n.unregisterLanguageChangeHandler(this.onLanguageChanged.bind(this));
         // 清理页面操作按钮
         UI.clearPageActions();
         // 设置取消标志，用于中断正在进行的异步操作

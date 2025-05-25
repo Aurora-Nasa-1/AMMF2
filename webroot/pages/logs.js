@@ -35,7 +35,7 @@ const LogsPage = {
     async init() {
         try {
             this.registerActions();
-            app.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
+            I18n.registerLanguageChangeHandler(this.onLanguageChanged.bind(this));
 
             const preloadedData = PreloadManager.getData('logs');
             if (preloadedData) {
