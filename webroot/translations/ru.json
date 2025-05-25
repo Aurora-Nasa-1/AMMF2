@@ -125,5 +125,9 @@
   "LOG_TIME_FULL_DATE": "{year}/{month}/{day} {time}",
 
   "VERSION": "Версия",
-  "VERSION_DATE": "Дата сборки"
+  "VERSION_DATE": "Дата сборки",
+
+  "CHECKING_UPDATE": "Проверка обновлений...",
+  "UPDATE_CHECK_FAILED": "Не удалось проверить обновления",
+  "UPDATE_AVAILABLE": "Доступно обновление"
 }

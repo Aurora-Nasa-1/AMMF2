@@ -352,9 +352,9 @@ const I18n = {
 
     getLanguageDisplayName(lang) {
         switch (lang) {
-            case 'zh': return this.translate('LANGUAGE_CHINESE', '中文');
-            case 'en': return this.translate('LANGUAGE_ENGLISH', 'English');
-            case 'ru': return this.translate('LANGUAGE_RUSSIAN', 'Русский');
+            case 'zh': return '中文';
+            case 'en': return 'English';
+            case 'ru': return 'Русский';
             default: return lang.toUpperCase();
         }
     },

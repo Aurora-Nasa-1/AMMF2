@@ -120,10 +120,10 @@ const StatusPage = {
     // 添加日期格式化方法
     formatDate(dateString) {
         if (!dateString || dateString.length !== 8) return dateString;
-        const year = dateString.substring(0, 4);
+        const year = dateString.substring(2, 4);
         const month = dateString.substring(4, 6);
         const day = dateString.substring(6, 8);
-        return `${year}年${month}月${day}日`;
+        return `${year}/${month}/${day}`;
     },
 
     async getLatestVersion() {

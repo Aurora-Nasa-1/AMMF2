@@ -125,5 +125,10 @@
   "LOG_TIME_FULL_DATE": "{year}/{month}/{day} {time}",
 
   "VERSION": "Version",
-  "VERSION_DATE": "Build Date"
+  "VERSION_DATE": "Build Date",
+
+  "CHECKING_UPDATE": "Checking for updates...",
+  "UPDATE_CHECK_FAILED": "Update check failed",
+  "UPDATE_AVAILABLE": "Update available",
+  "VIEW_UPDATE": "View Update"
 }

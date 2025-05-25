@@ -125,5 +125,9 @@
   "LOG_TIME_FULL_DATE": "{year}/{month}/{day} {time}",
 
   "VERSION": "版本",
-  "VERSION_DATE": "构建时间"
+  "VERSION_DATE": "构建时间",
+
+  "CHECKING_UPDATE": "正在检查更新...",
+  "UPDATE_CHECK_FAILED": "更新检查失败",
+  "UPDATE_AVAILABLE": "有可用的更新"
 }
