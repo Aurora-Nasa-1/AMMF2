@@ -39,37 +39,42 @@ main() {
     set_log_file "install"
     version_check
 
-    # Loop through all files in the bin directory
+    # 遍历bin目录中的所有文件
     for file in "$BIN_DIR"/*; do
-        if [ -f "$file" ]; then # Check if it's a regular file
+        if [ -f "$file" ]; then # 检查是否为常规文件
             filename=$(basename "$file")
-
-            if echo "$filename" | grep -q "-aarch64"; then
-                # This is an arm64 binary
+            
+            # 添加调试日志
+            log_info "处理文件: $filename"
+            
+            # 检查是否为arm64架构文件
+            if [[ "$filename" == *"-aarch64" ]]; then
+                # 这是arm64二进制文件
                 if [ "$ARCH" = "arm64" ]; then
-                    # Keep arm64 binary, rename it
-                    new_filename=$(echo "$filename" | sed 's/-aarch64//')
+                    # 保留arm64二进制文件，重命名它
+                    new_filename=${filename%-aarch64}
+                    log_info "重命名 $filename 为 $new_filename"
                     mv "$file" "$BIN_DIR/$new_filename"
-                    log_info "Renamed $filename to $new_filename"
                 else
-                    # Remove arm64 binary if current arch is not arm64
+                    # 如果当前架构不是arm64，则删除arm64二进制文件
+                    log_info "删除 $filename (非 $ARCH 架构)"
                     rm -f "$file"
-                    log_info "Removed $filename (not $ARCH architecture)"
                 fi
-            elif echo "$filename" | grep -q "-x86_64"; then
-                # This is an x86_64 binary
+            # 检查是否为x86_64架构文件
+            elif [[ "$filename" == *"-x86_64" ]]; then
+                # 这是x86_64二进制文件
                 if [ "$ARCH" = "x64" ]; then
-                    # Keep x86_64 binary, rename it
-                    new_filename=$(echo "$filename" | sed 's/-x86_64//')
+                    # 保留x86_64二进制文件，重命名它
+                    new_filename=${filename%-x86_64}
+                    log_info "重命名 $filename 为 $new_filename"
                     mv "$file" "$BIN_DIR/$new_filename"
-                    log_info "Renamed $filename to $new_filename"
                 else
-                    # Remove x86_64 binary if current arch is not x64
+                    # 如果当前架构不是x64，则删除x86_64二进制文件
+                    log_info "删除 $filename (非 $ARCH 架构)"
                     rm -f "$file"
-                    log_info "Removed $filename (not $ARCH architecture)"
                 fi
             else
-                log_info "Skipping $filename (no architecture suffix found)"
+                log_info "跳过 $filename (未找到架构后缀)"
             fi
         fi
     done
