@@ -10,7 +10,8 @@ class App {
             isLoading: true,
             currentPage: null,
             themeChanging: false,
-            headerTransparent: true
+            headerTransparent: true,
+            pagesConfig: null
         };
     }
     // 防抖
@@ -26,6 +27,9 @@ class App {
     async init() {
         await I18n.init();
         ThemeManager.init();
+        
+        // 加载页面配置
+        await this.loadPagesConfig();
         
         // Initialize CSS loader
         if (window.CSSLoader) {
@@ -50,6 +54,12 @@ class App {
             document.addEventListener('i18nReady', () => I18n.initLanguageSelector());
         }
 
+        // 初始化底栏导航
+        await this.initNavigation();
+        
+        // 加载页面模块JS文件
+        await this.loadPageModules();
+
         // 加载初始页面并等待完成
         const initialPage = Router.getCurrentPage();
         // 确保在初始化时也调用 onActivate
@@ -72,6 +82,103 @@ class App {
         if (loadingContainer) {
             loadingContainer.style.opacity = '0';
             setTimeout(() => loadingContainer.remove(), 300);
+        }
+    }
+    
+    /**
+     * 加载页面配置
+     */
+    async loadPagesConfig() {
+        try {
+            const response = await fetch('pages.json');
+            if (!response.ok) throw new Error(`加载页面配置失败: ${response.status}`);
+            
+            this.state.pagesConfig = await response.json();
+            
+            // 初始化Router模块映射
+            Router.initModules(this.state.pagesConfig);
+            
+            return this.state.pagesConfig;
+        } catch (error) {
+            console.error('加载页面配置失败:', error);
+            
+            // 使用默认配置
+            this.state.pagesConfig = {
+                pages: [
+                    {
+                        id: "status",
+                        name: "状态",
+                        icon: "dashboard",
+                        module: "StatusPage",
+                        file: "pages/status.js"
+                    }
+                ],
+                defaultPage: "status"
+            };
+            
+            Router.initModules(this.state.pagesConfig);
+            return this.state.pagesConfig;
+        }
+    }
+    
+    /**
+     * 初始化底栏导航
+     */
+    async initNavigation() {
+        if (!this.state.pagesConfig) return;
+        
+        const navElement = document.getElementById('app-nav');
+        if (!navElement) return;
+        
+        const navContent = document.createElement('div');
+        navContent.className = 'nav-content';
+        
+        // 创建导航项
+        this.state.pagesConfig.pages.forEach(page => {
+            const navItem = document.createElement('div');
+            navItem.className = 'nav-item';
+            navItem.dataset.page = page.id;
+            
+            if (page.id === this.state.pagesConfig.defaultPage) {
+                navItem.classList.add('active');
+            }
+            
+            navItem.innerHTML = `
+                <span class="material-symbols-rounded">${page.icon}</span>
+                <span class="nav-label" data-i18n="${page.i18n_key}">${page.name}</span>
+            `;
+            
+            // 绑定点击事件
+            navItem.addEventListener('click', () => {
+                Router.navigate(page.id);
+            });
+            
+            navContent.appendChild(navItem);
+        });
+        
+        navElement.appendChild(navContent);
+    }
+    
+    /**
+     * 加载页面模块JS文件
+     */
+    async loadPageModules() {
+        if (!this.state.pagesConfig || !this.state.pagesConfig.pages) return;
+        
+        const loadPromises = this.state.pagesConfig.pages.map(page => {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = page.file;
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error(`加载页面模块失败: ${page.file}`));
+                document.body.appendChild(script);
+            });
+        });
+        
+        try {
+            await Promise.allSettled(loadPromises);
+        } catch (error) {
+            console.error('加载页面模块出错:', error);
         }
     }
 
@@ -356,25 +463,36 @@ class PreloadManager {
 // 路由管理器
 class Router {
     // 页面模块映射
-    static modules = {
-        status: 'StatusPage',
-        logs: 'LogsPage',
-        settings: 'SettingsPage',
-        about: 'AboutPage'
-    };
+    static modules = {};
 
     // 页面缓存
     static cache = new Map();
+    
+    /**
+     * 初始化模块映射
+     * @param {Object} config - 页面配置对象
+     */
+    static initModules(config) {
+        if (!config || !config.pages) return;
+        
+        // 清空现有模块映射
+        this.modules = {};
+        
+        // 更新模块映射
+        config.pages.forEach(page => {
+            this.modules[page.id] = page.module;
+        });
+    }
 
     // 获取当前页面
     static getCurrentPage() {
         const hash = window.location.hash.slice(1);
-        return this.modules[hash] ? hash : 'status';
+        return this.modules[hash] ? hash : (app.state.pagesConfig?.defaultPage || 'status');
     }
+    
     static preloadConfig = {
         batchSize: 2,
         timeout: 2000,
-        priority: ['status', 'settings', 'logs', 'about'],
         preloadData: true
     };
 
@@ -412,18 +530,15 @@ class Router {
     }
 
     static preloadPages() {
-        const { priority, batchSize, timeout } = this.preloadConfig;
+        if (!app.state.pagesConfig || !app.state.pagesConfig.pages) return;
+        
+        const { batchSize, timeout } = this.preloadConfig;
         const currentPage = app.state.currentPage;
 
-        // 按优先级排序要加载的页面
-        const pagesToLoad = priority
-            .filter(page => page !== currentPage)
-            // 使用优先级数组的顺序作为权重进行排序
-            .sort((a, b) => {
-                const indexA = priority.indexOf(a);
-                const indexB = priority.indexOf(b);
-                return indexA - indexB;
-            });
+        // 获取要加载的页面
+        const pagesToLoad = app.state.pagesConfig.pages
+            .map(page => page.id)
+            .filter(pageId => pageId !== currentPage);
 
         const preloadBatch = async (startIndex) => {
             const batch = pagesToLoad.slice(startIndex, startIndex + batchSize);
@@ -622,20 +737,25 @@ class UI {
         pageActions: document.getElementById('page-actions'),
         themeToggle: document.getElementById('theme-toggle'),
         languageButton: document.getElementById('language-button'),
-        toastContainer: document.getElementById('toast-container')
+        toastContainer: document.getElementById('toast-container'),
+        appNav: document.getElementById('app-nav')
     };
 
     // 更新页面标题
     static updatePageTitle(pageName) {
-        const titles = {
-            status: I18n.translate('NAV_STATUS', '状态'),
-            logs: I18n.translate('NAV_LOGS', '日志'),
-            settings: I18n.translate('NAV_SETTINGS', '设置'),
-            about: I18n.translate('NAV_ABOUT', '关于')
-        };
+        if (!app.state.pagesConfig || !app.state.pagesConfig.pages) return;
+        
+        // 查找页面配置
+        const pageConfig = app.state.pagesConfig.pages.find(p => p.id === pageName);
+        if (!pageConfig) return;
+        
+        const title = pageConfig.i18n_key 
+            ? I18n.translate(pageConfig.i18n_key, pageConfig.name)
+            : pageConfig.name;
 
-        this.elements.pageTitle.textContent = titles[pageName] || 'AMMF WebUI';
+        this.elements.pageTitle.textContent = title || 'AMMF WebUI';
     }
+    
     static pageActions = new Map();
     static activeActions = new Set();
 
@@ -720,8 +840,26 @@ class UI {
     }
 
     /**
+     * 显示浮层
+     * @param {HTMLElement} element - 要显示的浮层元素
+     */
+    static showOverlay(element) {
+        if (!element) return;
+        element.classList.add('active');
+    }
+    
+    /**
+     * 隐藏浮层
+     * @param {HTMLElement} element - 要隐藏的浮层元素
+     */
+    static hideOverlay(element) {
+        if (!element) return;
+        element.classList.remove('active');
+    }
+
+    /**
      * 清理页面操作按钮
-     * @param {string} pageName - 页面名称
+     * @param {string} [pageName] - 页面名称，可选。如果不提供，则只清理当前活动的按钮
      */
     static clearPageActions(pageName) {
         // 清理事件监听器
@@ -746,8 +884,11 @@ class UI {
         }
 
         // 移除页面按钮配置
-        this.pageActions.delete(pageName);
+        if (pageName) {
+            this.pageActions.delete(pageName);
+        }
     }
+
     // 显示错误信息
     static showError(title, message) {
         this.elements.mainContent.innerHTML = `
@@ -789,38 +930,41 @@ class UI {
         const pageActions = this.elements.pageActions;
         const themeToggle = this.elements.themeToggle;
         const languageButton = this.elements.languageButton;
+        const appNav = this.elements.appNav;
 
         if (isLandscape) {
             // 横屏模式：移动按钮到侧栏
-            const navContent = document.querySelector('.nav-content');
-            if (navContent) {
-                // 确保存在或创建操作按钮容器
-                let pageActionsContainer = navContent.querySelector('.page-actions');
-                if (!pageActionsContainer) {
-                    pageActionsContainer = document.createElement('div');
-                    pageActionsContainer.className = 'page-actions';
-                    navContent.appendChild(pageActionsContainer);
-                }
+            if (appNav) {
+                const navContent = appNav.querySelector('.nav-content');
+                if (navContent) {
+                    // 确保存在或创建操作按钮容器
+                    let pageActionsContainer = navContent.querySelector('.page-actions');
+                    if (!pageActionsContainer) {
+                        pageActionsContainer = document.createElement('div');
+                        pageActionsContainer.className = 'page-actions';
+                        navContent.appendChild(pageActionsContainer);
+                    }
 
-                // 确保存在或创建系统按钮容器
-                let systemActionsContainer = navContent.querySelector('.system-actions');
-                if (!systemActionsContainer) {
-                    systemActionsContainer = document.createElement('div');
-                    systemActionsContainer.className = 'system-actions';
-                    navContent.appendChild(systemActionsContainer);
-                }
+                    // 确保存在或创建系统按钮容器
+                    let systemActionsContainer = navContent.querySelector('.system-actions');
+                    if (!systemActionsContainer) {
+                        systemActionsContainer = document.createElement('div');
+                        systemActionsContainer.className = 'system-actions';
+                        navContent.appendChild(systemActionsContainer);
+                    }
 
-                // 移动操作按钮
-                if (pageActions && !pageActionsContainer.contains(pageActions)) {
-                    pageActionsContainer.appendChild(pageActions);
-                }
+                    // 移动操作按钮
+                    if (pageActions && !pageActionsContainer.contains(pageActions)) {
+                        pageActionsContainer.appendChild(pageActions);
+                    }
 
-                // 移动系统按钮
-                if (languageButton && !systemActionsContainer.contains(languageButton)) {
-                    systemActionsContainer.appendChild(languageButton);
-                }
-                if (themeToggle && !systemActionsContainer.contains(themeToggle)) {
-                    systemActionsContainer.appendChild(themeToggle);
+                    // 移动系统按钮
+                    if (languageButton && !systemActionsContainer.contains(languageButton)) {
+                        systemActionsContainer.appendChild(languageButton);
+                    }
+                    if (themeToggle && !systemActionsContainer.contains(themeToggle)) {
+                        systemActionsContainer.appendChild(themeToggle);
+                    }
                 }
             }
         } else {
@@ -891,14 +1035,6 @@ const app = new App();
 
 // 绑定事件监听器
 window.addEventListener('DOMContentLoaded', () => {
-    // 绑定导航项点击事件
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const page = item.dataset.page;
-            if (page) Router.navigate(page);
-        });
-    });
-
     // 绑定主题切换按钮点击事件
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
@@ -930,6 +1066,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    
     // 添加滚动监听
     const mainContent = document.getElementById('main-content');
     if (mainContent) {
@@ -967,5 +1104,32 @@ window.app = {
     init: () => app.init(),
     execCommand: (command) => app.execCommand(command),
     loadPage: (pageName) => Router.navigate(pageName),
-    o: (command) => app.execCommand(command)
+    o: (command) => app.execCommand(command),
+    
+    // 添加新页面注册API
+    registerPage: (pageConfig) => {
+        if (!app.state.pagesConfig) return false;
+        
+        // 检查参数完整性
+        if (!pageConfig.id || !pageConfig.name || !pageConfig.module || !pageConfig.file) {
+            console.error('注册页面失败: 配置不完整', pageConfig);
+            return false;
+        }
+        
+        // 添加到配置
+        app.state.pagesConfig.pages.push(pageConfig);
+        
+        // 更新Router模块映射
+        Router.initModules(app.state.pagesConfig);
+        
+        // 若底栏已加载，需要更新导航
+        app.initNavigation();
+        
+        // 加载页面模块JS
+        const script = document.createElement('script');
+        script.src = pageConfig.file;
+        document.body.appendChild(script);
+        
+        return true;
+    }
 };

@@ -1,0 +1,45 @@
+{
+  "pages": [
+    {
+      "id": "status",
+      "name": "状态",
+      "icon": "dashboard",
+      "module": "StatusPage",
+      "file": "pages/status.js",
+      "i18n_key": "NAV_STATUS"
+    },
+    {
+      "id": "logs",
+      "name": "日志",
+      "icon": "article",
+      "module": "LogsPage",
+      "file": "pages/logs.js",
+      "i18n_key": "NAV_LOGS"
+    },
+    {
+      "id": "settings",
+      "name": "设置",
+      "icon": "settings",
+      "module": "SettingsPage",
+      "file": "pages/settings.js",
+      "i18n_key": "NAV_SETTINGS"
+    },
+    {
+      "id": "suppress_manager",
+      "name": "抑制管理",
+      "icon": "app_blocking",
+      "module": "SuppressManagerPage",
+      "file": "pages/suppress_manager.js",
+      "i18n_key": "NAV_SUPPRESS_MANAGER"
+    },
+    {
+      "id": "about",
+      "name": "关于",
+      "icon": "info",
+      "module": "AboutPage",
+      "file": "pages/about.js",
+      "i18n_key": "NAV_ABOUT"
+    }
+  ],
+  "defaultPage": "status"
+} 
