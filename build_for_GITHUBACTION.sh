@@ -51,3 +51,4 @@ rm -rf src
 rm build.sh
 rm latest_tag.txt
 rm current_time.txt
+rm build_for_GITHUBACTION.sh
