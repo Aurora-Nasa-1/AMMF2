@@ -3,7 +3,8 @@ MODDIR=${0%/*}
 MODPATH="$MODDIR"
 MODID=$(basename "$MODDIR")
 STATUS_FILE="$MODPATH/status.txt"
-
+BIN_DIR="$MODPATH/bin"
+FILEWATCH_BIN="$BIN_DIR/filewatch-${MODID}"
 # 设置初始状态为"运行中"
 echo "RUNNING" >"$STATUS_FILE"
 
@@ -44,7 +45,6 @@ abort() {
 enter_pause_mode() {
     update_status "PAUSED"
     log_info "${SERVICE_PAUSED:-已进入暂停模式，监控文件}: $1"
-    FILEWATCH_BIN="$MODPATH/bin/filewatch-${MODID}"
     # 检查参数数量
     if [ -f "$FILEWATCH_BIN" ]; then
         if [ "$#" -eq 2 ]; then

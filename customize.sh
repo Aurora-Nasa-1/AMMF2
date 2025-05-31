@@ -5,25 +5,26 @@
 # shellcheck disable=SC2155
 # shellcheck disable=SC2046
 # shellcheck disable=SC3045
-
+# shellcheck disable=SC1017
 # 初始化日志目录
 LOG_DIR="$MODPATH/logs"
+BIN_DIR="$MODPATH/bin"
 mkdir -p "$LOG_DIR"
 case "$ARCH" in
-    arm64)
-        rm -f "$MODPATH/bin/logmonitor-${MODID}-x86_64" 2>/dev/null
-        mv "$MODPATH/bin/logmonitor-${MODID}-aarch64" "$MODPATH/bin/logmonitor-${MODID}"
-        ;;
-    x64)
-        rm -f "$MODPATH/bin/logmonitor-${MODID}-aarch64" 2>/dev/null
-        mv "$MODPATH/bin/logmonitor-${MODID}-x86_64" "$MODPATH/bin/logmonitor-${MODID}"
-        ;;
-    arm|x86)
-        abort "Unsupported architecture: $ARCH"
-        ;;
-    *)
-        abort "Unknown architecture: $ARCH"
-        ;;
+arm64)
+    rm -f "$MODPATH/bin/logmonitor-${MODID}-x86_64" 2>/dev/null
+    mv "$MODPATH/bin/logmonitor-${MODID}-aarch64" "$MODPATH/bin/logmonitor-${MODID}"
+    ;;
+x64)
+    rm -f "$MODPATH/bin/logmonitor-${MODID}-aarch64" 2>/dev/null
+    mv "$MODPATH/bin/logmonitor-${MODID}-x86_64" "$MODPATH/bin/logmonitor-${MODID}"
+    ;;
+arm | x86)
+    abort "Unsupported architecture: $ARCH"
+    ;;
+*)
+    abort "Unknown architecture: $ARCH"
+    ;;
 esac
 
 main() {
@@ -37,17 +38,41 @@ main() {
     start_script
     set_log_file "install"
     version_check
-    if [ "$ARCH" = "arm64" ]; then
-        rm -f "$MODPATH/bin/filewatch-${MODID}-x86_64"
-        mv "$MODPATH/bin/filewatch-${MODID}-aarch64" "$MODPATH/bin/filewatch-${MODID}"
-        log_info "Architecture: arm64, using aarch64 binary"
-    fi
-    if [ "$ARCH" = "x64" ]; then
-        rm -f "$MODPATH/bin/filewatch-${MODID}-aarch64"
-        mv "$MODPATH/bin/filewatch-${MODID}-x86_64" "$MODPATH/bin/filewatch-${MODID}"
-        log_info "Architecture: x64, using x86_64 binary"
-    fi
 
+    # Loop through all files in the bin directory
+    for file in "$BIN_DIR"/*; do
+        if [ -f "$file" ]; then # Check if it's a regular file
+            filename=$(basename "$file")
+
+            if echo "$filename" | grep -q "-aarch64"; then
+                # This is an arm64 binary
+                if [ "$ARCH" = "arm64" ]; then
+                    # Keep arm64 binary, rename it
+                    new_filename=$(echo "$filename" | sed 's/-aarch64//')
+                    mv "$file" "$BIN_DIR/$new_filename"
+                    log_info "Renamed $filename to $new_filename"
+                else
+                    # Remove arm64 binary if current arch is not arm64
+                    rm -f "$file"
+                    log_info "Removed $filename (not $ARCH architecture)"
+                fi
+            elif echo "$filename" | grep -q "-x86_64"; then
+                # This is an x86_64 binary
+                if [ "$ARCH" = "x64" ]; then
+                    # Keep x86_64 binary, rename it
+                    new_filename=$(echo "$filename" | sed 's/-x86_64//')
+                    mv "$file" "$BIN_DIR/$new_filename"
+                    log_info "Renamed $filename to $new_filename"
+                else
+                    # Remove x86_64 binary if current arch is not x64
+                    rm -f "$file"
+                    log_info "Removed $filename (not $ARCH architecture)"
+                fi
+            else
+                log_info "Skipping $filename (no architecture suffix found)"
+            fi
+        fi
+    done
     if [ ! -f "$MODPATH/files/scripts/install_custom_script.sh" ]; then
         log_error "Notfound File!!!($MODPATH/files/scripts/install_custom_script.sh)"
         abort "Notfound File!!!($MODPATH/files/scripts/install_custom_script.sh)"
