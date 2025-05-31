@@ -11,6 +11,12 @@ const I18n = {
         en: {},
         ru: {}
     },
+    // 模块扩展翻译
+    moduleTranslations: {
+        zh: {},
+        en: {},
+        ru: {}
+    },
     // 添加语言切换处理器集合
     languageChangeHandlers: new Set(),
 
@@ -18,6 +24,8 @@ const I18n = {
         try {
             console.log('开始初始化语言模块...');
             await this.loadTranslations();
+            // 加载模块翻译文件
+            await this.loadModuleTranslations();
             await this.determineInitialLanguage();
             this.applyTranslations();
             this.initLanguageSelector();
@@ -91,6 +99,54 @@ const I18n = {
             console.error('加载翻译文件失败:', error);
             // 确保至少有基础的中文翻译
             this.translations.zh = this.getBaseTranslations();
+        }
+    },
+
+    // 新增：加载模块扩展翻译
+    async loadModuleTranslations() {
+        try {
+            console.log('开始加载模块扩展翻译...');
+            // 加载每种语言的模块翻译文件
+            const loadPromises = this.supportedLangs.map(async lang => {
+                try {
+                    const response = await fetch(`translations/module/${lang}.json`);
+                    // 如果文件不存在，静默失败
+                    if (response.status === 404) {
+                        console.log(`模块翻译文件不存在: translations/module/${lang}.json`);
+                        return;
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const moduleTranslations = await response.json();
+                    
+                    // 验证加载的翻译数据
+                    if (typeof moduleTranslations === 'object' && Object.keys(moduleTranslations).length > 0) {
+                        // 存储模块翻译
+                        this.moduleTranslations[lang] = moduleTranslations;
+                        
+                        // 将模块翻译合并到主翻译中（模块翻译优先级低于主翻译）
+                        this.translations[lang] = {
+                            ...moduleTranslations,
+                            ...this.translations[lang]  // 主翻译覆盖同名的模块翻译
+                        };
+                        
+                        console.log(`成功加载${lang}模块翻译文件，包含 ${Object.keys(moduleTranslations).length} 个翻译项`);
+                    } else {
+                        console.warn(`${lang}模块翻译文件格式无效或为空`);
+                    }
+                } catch (error) {
+                    // 模块翻译加载失败不影响主程序运行
+                    console.warn(`加载${lang}模块翻译文件失败:`, error.message);
+                }
+            });
+
+            await Promise.all(loadPromises);
+            console.log('模块扩展翻译加载完成');
+        } catch (error) {
+            console.warn('加载模块翻译文件失败:', error.message);
         }
     },
 
