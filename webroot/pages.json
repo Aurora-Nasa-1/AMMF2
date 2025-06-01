@@ -25,6 +25,14 @@
       "i18n_key": "NAV_SETTINGS"
     },
     {
+      "id": "suppress_manager",
+      "name": "抑制管理",
+      "icon": "app_blocking",
+      "module": "SuppressManagerPage",
+      "file": "pages/suppress_manager.js",
+      "i18n_key": "NAV_SUPPRESS_MANAGER"
+    },
+    {
       "id": "about",
       "name": "关于",
       "icon": "info",
