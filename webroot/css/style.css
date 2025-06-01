@@ -70,6 +70,7 @@
   transition: background-color var(--tra);
   align-items: center;
   justify-content: center;
+  display: flex;
 }
 
 .icon-button:hover {
