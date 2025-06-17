@@ -11,39 +11,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # 设置为 0 以获取所有标签历史
-
-      - name: Get current time
-        run: |
-          random_number=$((RANDOM % 100))
-          timestamp_with_random="$(date +'%Y%m%d')${random_number}"
-          echo "$timestamp_with_random" > current_time.txt
-
-      - name: Get latest tag
-        id: latest-tag
-        run: |
-          LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
-          echo "$LATEST_TAG" > latest_tag.txt
+          fetch-depth: 0 # Required by RMM if it uses git history, and good for LATEST_TAG if that was needed
 
       - name: Set short SHA
         run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH # Ensure uv is in PATH for next steps
+
+      - name: Install RMM (pyrmm)
+        run: |
+          source "$HOME/.cargo/env" # Ensure uv is sourced if just installed
+          uv tool install pyrmm
+          echo "$HOME/.local/bin" >> $GITHUB_PATH # Ensure rmm is in PATH
 
       - name: Setup Android NDK
         uses: nttld/setup-ndk@v1
         id: setup-ndk
         with:
-          ndk-version: r26d
+          ndk-version: r26d # Matches original, rmm/custom script assumes NDK is present
 
-      - name: Start Build
-        run: |
-          . module_settings/config.sh
-          LATEST_TAG=$(cat latest_tag.txt)
-          CURRENT_TIME=$(cat current_time.txt)
-          . build_for_GITHUBACTION.sh
+      - name: Start Build with RMM
+        env: # Pass ANDROID_NDK_HOME to ensure custom_rmm_build.sh can find it
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: rmm build # This will execute "bash ./custom_rmm_build.sh"
 
       - name: Upload zip files as artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}_${{ env.SHORT_SHA }}
-          path: |
-            *
+          path: "*.zip" # RMM build should produce one zip file in the root
+          if-no-files-found: error # Fail if the zip isn't there

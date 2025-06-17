@@ -1,4 +1,3 @@
-
 # AMMF2 - Aurora Modular Magisk Framework
 
 [简体中文](../README.md) | [English](README.md)
@@ -54,15 +53,19 @@ cd AMMF2
 
 ### Build Module
 
-1. **Local Build Module**:  
-   Run the `build.sh` script to build the module:  
-   ```bash
-   ./build.sh
-   ```
-   
+The module build process is now managed by RMM (RootManageModuleModel).
+
+1.  **Local Build Module**:
+    Please refer to the [Module Development Guide](module_development.md#building-the-module-with-rmm) for detailed local build instructions and prerequisites. In short, after setting up NDK, uv, and RMM, the build command is:
+    ```bash
+    rmm build
+    ```
+    The old `build.sh` script is deprecated.
+
+2.  **GitHub Action Automatic Build**:
+    Committing or pushing a Tag (e.g., `v1.0`) will automatically trigger the GitHub Actions workflow to build the module. This process also uses RMM.
+
 ### Custom Script Development
-2. **GitHub Action Automatic Build**:
-   Trigger the build by committing or pushing a tag (v*).
 
 **To ensure future updatability, it is recommended not to modify service.sh and customize.sh**
 

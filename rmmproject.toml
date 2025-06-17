@@ -1,0 +1,23 @@
+[project]
+id = "LogMonitor"
+description = "Module Description"  # Updated from action_description
+readme = "README.md"
+changelog = "CHANGELOG.md"
+license = "LICENSE"
+dependencies = []
+
+[project.scripts]
+install = "rmm device install"
+test = "rmm test"
+build = "bash ./custom_rmm_build.sh" # Explicitly use bash
+
+[[authors]]
+name = "Module Author"  # Updated from action_author
+email = "unknown@example.com" # Keeping RMM's default for email as it's not in build_config.sh
+
+[urls]
+github = "https://github.com/your_name/your_repo" # Updated from Github_update_repo
+
+[build-system]
+requires = ["rmm>=0.3.0"]
+build-backend = "rmm"

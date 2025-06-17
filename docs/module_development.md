@@ -100,6 +100,31 @@ updateJson="XXXX/update.json"
 
 如果需要WebUI界面，可以在 `webroot/pages/` 目录下创建新的页面模块。
 
+### 5. 构建模块 (使用 RMM)
+
+本项目现在使用 RootManageModuleModel (RMM) 来管理和构建模块。
+
+**本地构建先决条件:**
+
+1.  **Android NDK:** 确保您已安装 Android NDK，并且 `ANDROID_NDK_HOME` 环境变量已设置为其位置。
+2.  **uv (Python 打包工具):** 通过运行以下命令安装 `uv`: `curl -LsSf https://astral.sh/uv/install.sh | sh`。请确保 `$HOME/.cargo/bin` 在您的 PATH 中。
+3.  **RMM (pyrmm CLI):** 使用 uv 安装 RMM: `uv tool install pyrmm`。请确保 `$HOME/.local/bin` 在您的 PATH 中。
+
+**构建命令:**
+
+满足先决条件后，您可以通过导航到项目根目录并运行以下命令来构建模块：
+`rmm build`
+
+此命令利用 `rmmproject.toml` 中定义的 `custom_rmm_build.sh` 脚本来执行所有必要的构建步骤，包括 C++ 编译和打包。
+
+**自动化构建:**
+
+构建也通过 GitHub Actions 工作流自动处理，这些工作流使用相同的 RMM 设置。
+
+**已弃用的构建脚本:**
+
+旧的构建脚本 (`build.sh`, `build_for_GITHUBACTION.sh`) 现已弃用，不应再用于构建模块。它们的功能已通过 `custom_rmm_build.sh` 集成到 RMM 构建流程中。建议从您的本地存储库中删除它们。
+
 ## 常见问题
 
 ### Q: 如何调试模块？

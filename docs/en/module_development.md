@@ -100,6 +100,31 @@ Create your custom scripts in the `files/scripts/` directory:
 
 If you need a WebUI interface, create new page modules in the `webroot/pages/` directory.
 
+### 5. Building the Module (with RMM)
+
+This project now uses RootManageModuleModel (RMM) for managing and building the module.
+
+**Prerequisites for Local Builds:**
+
+1.  **Android NDK:** Ensure you have the Android NDK installed and the `ANDROID_NDK_HOME` environment variable is set to its location.
+2.  **uv (Python Packager):** Install `uv` by running: `curl -LsSf https://astral.sh/uv/install.sh | sh`. Ensure `$HOME/.cargo/bin` is in your PATH.
+3.  **RMM (pyrmm CLI):** Install RMM using uv: `uv tool install pyrmm`. Ensure `$HOME/.local/bin` is in your PATH.
+
+**Build Command:**
+
+Once prerequisites are met, you can build the module by navigating to the project root and running:
+`rmm build`
+
+This command utilizes the `custom_rmm_build.sh` script defined in `rmmproject.toml` to perform all necessary build steps, including C++ compilation and packaging.
+
+**Automated Builds:**
+
+Builds are also handled automatically via GitHub Actions workflows, which use the same RMM setup.
+
+**Deprecated Build Scripts:**
+
+The old build scripts (`build.sh`, `build_for_GITHUBACTION.sh`) are now deprecated and should no longer be used for building the module. Their functionality has been integrated into the RMM build process via `custom_rmm_build.sh`. It is recommended to remove them from your local repository.
+
 ## FAQ
 
 ### Q: How to debug modules?

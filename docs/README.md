@@ -1,4 +1,3 @@
-
 # AMMF2 - Aurora Modular Magisk Framework
 
 [简体中文](README.md) | [English](en/README.md)
@@ -51,15 +50,18 @@ cd AMMF2
 
 ### 构建模块
 
-1. **本地构建模块**：
-   运行 `build.sh` 脚本来构建模块：
-   ```bash
-   ./build.sh
-   ```
+模块的构建过程现在由 RMM (RootManageModuleModel) 管理。
 
-2. **Github Action自动构建**:
-   提交或提交 Tag(v\*)触发构建
-   
+1.  **本地构建模块**：
+    请参阅 [模块开发指南](module_development.md#构建模块-使用-rmm) 获取详细的本地构建说明和先决条件。简而言之，在设置好 NDK、uv 和 RMM 后，构建命令为：
+    ```bash
+    rmm build
+    ```
+    旧的 `build.sh` 脚本已弃用。
+
+2.  **Github Action 自动构建**:
+    提交或推送 Tag (例如 `v1.0`) 会自动触发 GitHub Actions 工作流来构建模块。此过程也使用 RMM。
+
 ### 自定义脚本开发
 
 **为确保后期可更新性，建议不要修改 service.sh 和 customize.sh**

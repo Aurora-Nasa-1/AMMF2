@@ -1,0 +1,7 @@
+id=LogMonitor
+name=LogMonitor Module
+version=0.3.5
+versionCode=2025061701
+author=unknown
+description=A rmm project: LogMonitor
+updateJson=https://github.com/Aurora-Nasa-1/AMMF2/releases/latest/download/update.json
